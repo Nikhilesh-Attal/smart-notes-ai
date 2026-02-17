@@ -1,58 +1,23 @@
+import { ingestYoutube } from "./ingestionService";
 import { Request } from "express";
-import { createSupabaseClient } from "../helpers/supabseClientHelpers";
-import { OpenAIEmbeddings } from "@langchain/openai";
-import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
-import { YoutubeLoader } from "@langchain/community/document_loaders/web/youtube";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
-export async function storeDocument(req: Request){
-    try{
+export async function storeDocument(req: Request) {
+  const { url, documentId } = req.body;
 
-        const { url } = req.body;
+  const result = await ingestYoutube(url, documentId);
 
-        //initialize supabase client
-        const supabase = createSupabaseClient()
-        
-        //initialize the embeddings
-        const embeddings = new OpenAIEmbeddings({
-            openAIApiKey: process.env.OPENAI_API_KEY,
-            model: "text-embedding-3-small"
-        });
-        
-        //initialize the vectore store
-        const vectorStore = new SupabaseVectorStore(embeddings, {
-            client: supabase,
-            tableName: "documents",
-            queryName: "match_documents",
-        });
+  console.log("storeDocument called: ",req.body)
+  if (!result.ok && result.reason === "NO_TRANSCRIPT") {
+    console.log("Video has no captions")
+    return {
+      ok: false,
+      message: "Video has no captions",
+    };
+  }
 
-        //getting the youtube video
-        const loader = new YoutubeLoader.createFromUrl(url, {
-            addVideoInfo: true,
-        })
+  if (!result.ok) {
+    return { ok: false };
+  }
 
-        const docs = await loader.load();
-
-        console.log(docs);
-
-        //splitting document in chunks
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 1000,
-            chunkOverlap: 200,
-        });
-
-        const texts = await splitter.splitDocuments(docs);
-
-        console.log(texts);
-
-        //adding metadata to the document
-
-        //adding the documents to the vectore store
-    }catch(error){
-        console.error('Error in file backend/src/services/storeDocumentService.ts: ', error);
-
-        return{ ok: false,}
-    }
-
-    return{ ok: true };
-};
+  return { ok: true };
+}

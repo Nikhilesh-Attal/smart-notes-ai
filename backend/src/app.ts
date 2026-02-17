@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { METHODS } from 'http';
-import storeDocumentRouter from './routers/storeDocumentRoutes.ts';
+import storeDocumentRouter from './routers/storeDocumentRoutes';
+import queryDocumentRouter from './routers/queryDocumentRoutes';
 const app = express();
 
 app.use(express.json());
@@ -16,5 +16,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use('/store-document', storeDocumentRouter);
+app.use('/query-document', queryDocumentRouter);
 
 export default app;
