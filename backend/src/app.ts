@@ -17,5 +17,5 @@ app.use(cors(corsOptions));
 
 app.use('/store-document', storeDocumentRouter);
 app.use('/query-document', queryDocumentRouter);
-
+console.log("App.tsx file running");
 export default app;

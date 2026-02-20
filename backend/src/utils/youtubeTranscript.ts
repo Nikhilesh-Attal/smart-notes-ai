@@ -1,38 +1,87 @@
-import fetch from "node-fetch";
-import { parseStringPromise } from "xml2js";
+import { spawn } from "child_process"
+import path from "path"
+import fs from "fs"
 
-export function extractVideoId(url: string): string | null {
-  const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11}).*/;
-  const match = url.match(regExp);
-  return match ? match[1] : null;
-}
+export const getYoutubeTranscript = async (url: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    console.log(`[YoutubeTranscript] Starting for URL: ${url}`)
 
-export async function getYoutubeTranscript(url: string): Promise<string> {
-  const videoId = extractVideoId(url);
+    const rootDir = process.cwd()
+    const ytDlpPath = path.join(rootDir, "yt-dlp.exe")
+    const pythonScriptPath = path.join(rootDir, "transcribe.py")
+    const tempDir = path.join(rootDir, "tmp", "yt")
 
-  if (!videoId) {
-    throw new Error("Invalid YouTube URL");
-  }
+    // ensure temp dir exists
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true })
+    }
 
-  const transcriptUrl = `https://video.google.com/timedtext?lang=en&v=${videoId}`;
+    if (!fs.existsSync(ytDlpPath)) {
+      return reject(new Error(`yt-dlp.exe not found at ${ytDlpPath}`))
+    }
 
-  const response = await fetch(transcriptUrl);
+    if (!fs.existsSync(pythonScriptPath)) {
+      return reject(new Error(`transcribe.py not found at ${pythonScriptPath}`))
+    }
 
-  if (!response.ok) {
-    throw new Error("Transcript not available for this video");
-  }
+    console.log(`[1/2] Spawning yt-dlp...`)
 
-  const xml = await response.text();
+    const args = [
+      "-x",
+      "--audio-format",
+      "mp3",
+      "--no-write-subs",
+      "--no-write-auto-subs",
+      "-o",
+      path.join(tempDir, "%(id)s.%(ext)s"),
+      url,
+    ]
 
-  const parsed = await parseStringPromise(xml);
+    const downloader = spawn(ytDlpPath, args)
 
-  if (!parsed?.transcript?.text) {
-    throw new Error("No transcript data found");
-  }
+    downloader.on("close", (code) => {
+      if (code !== 0) {
+        return reject(new Error(`yt-dlp failed with exit code ${code}`))
+      }
 
-  const transcriptText = parsed.transcript.text
-    .map((t: any) => t._)
-    .join(" ");
+      // find newest mp3 in temp dir
+      const files = fs
+        .readdirSync(tempDir)
+        .filter((f) => f.endsWith(".mp3"))
+        .map((f) => ({
+          name: f,
+          time: fs.statSync(path.join(tempDir, f)).mtime.getTime(),
+        }))
+        .sort((a, b) => b.time - a.time)
 
-  return transcriptText;
+      if (files.length === 0) {
+        return reject(new Error("No audio file found after yt-dlp"))
+      }
+
+      const audioPath = path.join(tempDir, files[0].name)
+
+      console.log(`[2/2] Audio saved: ${files[0].name}. Spawning Python...`)
+
+      const transcriber = spawn("python", [pythonScriptPath, audioPath])
+
+      let transcript = ""
+      let errorLog = ""
+
+      transcriber.stdout.on("data", (d) => (transcript += d.toString()))
+      transcriber.stderr.on("data", (d) => (errorLog += d.toString()))
+
+      transcriber.on("close", (pCode) => {
+        // cleanup
+        if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath)
+
+        if (pCode !== 0) {
+          console.error(`[Python Error]: ${errorLog}`)
+          return reject(new Error(`Whisper failed: ${errorLog}`))
+        }
+
+        console.log(`[Success] Transcript length: ${transcript.length}`)
+        resolve(transcript.trim())
+      })
+    })
+  })
 }

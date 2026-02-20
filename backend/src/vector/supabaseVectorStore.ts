@@ -1,16 +1,14 @@
-import { createSupabaseClient } from "../helpers/supabseClientHelpers";
-import { OpenAIEmbeddings } from "@langchain/openai";
-import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
+import { createSupabaseClient } from "../helpers/supabseClientHelpers"
+import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase"
+import { LocalBgeEmbeddings } from "./localBgeEmbeddinds"
 
-const supabase = createSupabaseClient();
+const supabase = createSupabaseClient()
 
-const embeddings = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  model: "text-embedding-3-small",
-});
-
-export const vectorStore = new SupabaseVectorStore(embeddings, {
-  client: supabase,
-  tableName: "documents",
-  queryName: "match_documents",
-});
+export const vectorStore = new SupabaseVectorStore(
+  new LocalBgeEmbeddings() as any,
+  {
+    client: supabase,
+    tableName: "documents_embbeding",
+    queryName: "match_documents",
+  }
+)

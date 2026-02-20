@@ -27,16 +27,13 @@ export async function ingestYoutube(url: string, documentId: string) {
 
     return { ok: true };
   } catch (err: any) {
-    if (err.message === "YOUTUBE_NO_TRANSCRIPT") {
-      return {
-        ok: false,
-        reason: "NO_TRANSCRIPT",
-      };
-    }
-
+    console.error("[ingestionService] Error during YouTube ingestion:", err.message);
+    
+    // Pass through the actual error message
     return {
       ok: false,
-      reason: "UNKNOWN",
+      reason: err.message || "UNKNOWN_ERROR",
+      error: err.message
     };
   }
 }

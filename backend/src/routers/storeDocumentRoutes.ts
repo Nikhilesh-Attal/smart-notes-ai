@@ -7,9 +7,9 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
     try{
         const result = await storeDocument(req)
         res.status(200).json(result)
-    } catch (eorror){
-        console.error("Error in storeDocument: ", eorror)
-        res.status(500).json({ eooro: "An error occured during the request."})
+    } catch (error){
+        console.error("Error in storeDocument: ", error)
+        res.status(500).json({ error: "An error occurred during the request."})
     }
 });
 

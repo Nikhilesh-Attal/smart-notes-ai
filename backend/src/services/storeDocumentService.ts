@@ -4,20 +4,18 @@ import { Request } from "express";
 export async function storeDocument(req: Request) {
   const { url, documentId } = req.body;
 
+  console.log("[storeDocumentService] Processing request:", { url, documentId });
+  
   const result = await ingestYoutube(url, documentId);
 
-  console.log("storeDocument called: ",req.body)
-  if (!result.ok && result.reason === "NO_TRANSCRIPT") {
-    console.log("Video has no captions")
+  if (!result.ok) {
+    console.log("[storeDocumentService] Error:", result.error || result.reason || "Unknown Error");
     return {
       ok: false,
-      message: "Video has no captions",
+      message: result.error || result.reason || "Unknown Error",
     };
   }
 
-  if (!result.ok) {
-    return { ok: false };
-  }
-
+  console.log("[storeDocumentService] Success: Document stored");
   return { ok: true };
 }
