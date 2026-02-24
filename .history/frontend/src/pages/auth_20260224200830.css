@@ -1,0 +1,142 @@
+/* --- Global Auth Page Layout --- */
+.auth-page-wrapper {
+    min-height: 100vh;
+    background-color: #0b0f1a; /* Matches your Home theme */
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Centering the Login/Signup Box */
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* --- The Glassmorphism Box --- */
+.auth-box {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 450px;
+    padding: 45px;
+    border-radius: 40px; /* High rounding for modern look */
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.auth-box h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.auth-subtitle {
+    color: #94a3b8;
+    margin-bottom: 35px;
+    font-size: 0.95rem;
+}
+
+/* --- Form Elements --- */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding-left: 5px;
+}
+
+.input-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 14px 18px;
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    border-color: #38c16a;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 10px rgba(56, 193, 106, 0.2);
+}
+
+/* --- Cylindrical Submit Button --- */
+.auth-submit-btn {
+    background-color: #38c16a;
+    color: #0b0f1a;
+    border: none;
+    padding: 16px;
+    border-radius: 50px; /* Fully cylindrical */
+    font-weight: 800;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(56, 193, 106, 0.3);
+}
+
+.auth-submit-btn:hover {
+    background-color: #2ea85a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(56, 193, 106, 0.4);
+}
+
+/* --- Footer & Switch Links --- */
+.auth-footer {
+    margin-top: 30px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.auth-footer span {
+    color: #4ade80;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.auth-footer span:hover {
+    color: #38c16a;
+    text-decoration: underline;
+}
+
+/* Back Link (Top Navigation) */
+.about-nav {
+    padding: 30px;
+}
+
+.back-link {
+    background: none;
+    border: none;
+    color: #4ade80;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-link:hover {
+    transform: translateX(-5px);
+    color: #38c16a;
+}

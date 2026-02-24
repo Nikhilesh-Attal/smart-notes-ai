@@ -1,0 +1,112 @@
+/* Home Page Styling */
+
+/* .home-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  text-align: center;
+} */
+
+/* .home-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.home-subtitle {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  margin-bottom: 30px;
+}
+
+.home-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+} */
+
+.home-button:hover {
+  background-color: #2563eb;
+}
+
+.home-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-light); /* Light background */
+  color: var(--text-main);
+  text-align: center;
+  padding: 20px;
+}
+
+.home-card {
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e3e6f0;
+}
+
+.home-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--bg-dark); /* Using #2f3237 here */
+  margin-bottom: 1rem;
+}
+
+.home-subtitle {
+  font-size: 1.1rem;
+  color: #5a5c69;
+  margin-bottom: 2rem;
+  max-width: 500px;
+}
+
+.home-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 12px 24px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--bg-dark); /* #2f3237 */
+  color: #f8f9fc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #40444b;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  padding: 12px 24px;
+  font-weight: 600;
+  border: 2px solid var(--bg-dark);
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--bg-dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-color: var(--bg-dark);
+  color: white;
+}

@@ -1,0 +1,31 @@
+.auth-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-box {
+  background: #1f2937;
+  padding: 40px;
+  border-radius: 10px;
+  width: 350px;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: none;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 12px;
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+

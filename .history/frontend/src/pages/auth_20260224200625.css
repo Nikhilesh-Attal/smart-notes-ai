@@ -1,0 +1,143 @@
+.auth-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-box {
+  background: #1f2937;
+  padding: 40px;
+  border-radius: 10px;
+  width: 350px;
+}
+
+.auth-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: none;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 12px;
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Full Page Wrapper */
+.auth-page-wrapper {
+    min-height: 100vh;
+    background-color: #0b0f1a;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Auth Container Centering */
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* The Glass Box */
+.auth-box {
+    width: 100%;
+    max-width: 450px;
+    padding: 40px;
+    border-radius: 30px;
+    text-align: center;
+}
+
+.auth-box h2 {
+    font-size: 2rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.auth-subtitle {
+    color: #94a3b8;
+    margin-bottom: 30px;
+    font-size: 0.95rem;
+}
+
+/* Form Layout */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding-left: 5px;
+}
+
+.input-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 15px;
+    color: #ffffff;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus {
+    border-color: #38c16a;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Login Pill Button */
+.auth-submit-btn {
+    background-color: #38c16a;
+    color: #0b0f1a;
+    border: none;
+    padding: 14px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(56, 193, 106, 0.2);
+}
+
+.auth-submit-btn:hover {
+    background-color: #2ea85a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 193, 106, 0.3);
+}
+
+/* Footer Link */
+.auth-footer {
+    margin-top: 25px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.auth-footer span {
+    color: #4ade80;
+    cursor: pointer;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.auth-footer span:hover {
+    color: #38c16a;
+}

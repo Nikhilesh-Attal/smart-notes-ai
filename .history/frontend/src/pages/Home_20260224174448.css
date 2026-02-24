@@ -1,0 +1,142 @@
+/* Global Reset & Base Theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: #f8f9fc; /* Light Background */
+    color: #2f3237;           /* Dark Charcoal Text */
+    line-height: 1.6;
+}
+
+/* Glassmorphism Refined for Light Theme */
+.glass {
+    background: rgba(47, 50, 55, 0.03); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(47, 50, 55, 0.1);
+}
+
+/* Header Styling - Dark Structural Element */
+.home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    margin-top: 20px;
+    width: 95%;
+    max-width: 1400px;
+    background-color: #2f3237; /* Solid Dark Header */
+    color: #f8f9fc;
+    border-radius: 100px;
+    z-index: 1000;
+}
+
+.nav-link, .text-btn {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.nav-link:hover, .text-btn:hover {
+    color: #ffffff;
+}
+
+.primary-btn {
+    background-color: #f8f9fc;
+    color: #2f3237;
+    padding: 8px 24px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.primary-btn:hover {
+    background-color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Hero Content */
+.hero-content {
+    text-align: center;
+    padding: 80px 40px;
+    border-radius: 40px;
+    max-width: 900px;
+    background: white; /* Clean card for hero */
+    box-shadow: 0 20px 40px rgba(47, 50, 55, 0.05);
+}
+
+.home-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: #2f3237;
+}
+
+.gradient-highlight {
+    /* Subtle charcoal to soft gray gradient instead of neon */
+    background: linear-gradient(90deg, #2f3237, #64748b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.home-subtitle {
+    font-size: 1.25rem;
+    color: #4b5563;
+    margin-bottom: 40px;
+}
+
+.main-cta {
+    padding: 20px 80px; /* Adjusted padding for better balance */
+    font-size: 1.4rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 50px;
+    background: #2f3237;
+    color: #f8f9fc;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.main-cta:hover {
+    background: #44484f;
+    transform: scale(1.02);
+}
+
+/* Bento Grid Styling */
+.bento-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 30px;
+    border-radius: 30px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.bento-card:hover {
+    border-color: #2f3237;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+}
+
+.dot.p { background: #2f3237; box-shadow: none; }
+.dot.g { background: #94a3b8; box-shadow: none; }
+
+.progress-fill { background: #2f3237; }
+
+/* Footer */
+.home-footer {
+    padding: 60px;
+    color: #94a3b8;
+    background: #2f3237;
+    margin-top: 50px;
+}

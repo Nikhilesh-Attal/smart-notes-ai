@@ -1,0 +1,147 @@
+/* Contact Page Layout */
+.contact-page-wrapper {
+    min-height: 100vh;
+    background-color: #0b0f1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Back Button styling */
+.back-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: none;
+    border: none;
+    color: #4ade80;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    transform: translateX(-5px);
+}
+
+/* Main Container */
+.contact-container {
+    width: 100%;
+    max-width: 600px;
+    padding: 50px;
+    border-radius: 40px;
+    text-align: center;
+}
+
+.contact-header {
+    margin-bottom: 40px;
+}
+
+.contact-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.contact-subtitle {
+    color: #94a3b8;
+    font-size: 1.1rem;
+}
+
+/* Form Styling */
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: left;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding-left: 5px;
+}
+
+.input-group input, 
+.input-group textarea {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    color: #ffffff;
+    font-family: inherit;
+    outline: none;
+    transition: 0.3s;
+}
+
+.input-group input:focus, 
+.input-group textarea:focus {
+    border-color: #38c16a;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Submit Button - Matches your Green Pill style */
+.contact-submit-btn {
+    background-color: #38c16a;
+    color: #0b0f1a;
+    border: none;
+    padding: 15px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(56, 193, 106, 0.3);
+}
+
+.contact-submit-btn:hover {
+    background-color: #2ea85a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 193, 106, 0.4);
+}
+
+/* Success State */
+.success-message {
+    padding: 40px 0;
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.success-message h2 {
+    color: #ffffff;
+    margin-bottom: 15px;
+}
+
+.success-message p {
+    color: #94a3b8;
+    margin-bottom: 30px;
+}
+
+.back-btn-simple {
+    background: none;
+    border: 1px solid #38c16a;
+    color: #38c16a;
+    padding: 10px 25px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-btn-simple:hover {
+    background: #38c16a;
+    color: #0b0f1a;
+}
