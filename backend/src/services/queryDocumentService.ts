@@ -34,7 +34,7 @@ export async function queryDocumentService(req: Request){
         // 4. initialize the vector store and retrieve relevant documents
         const vectorStore = new SupabaseVectorStore(embeddings, {
             client: supabase,
-            tableName: "documents_embbeding",
+            tableName: "documents_embedding",
             queryName: "match_documents",
             filter: {
                 document_ids: [documentId]

@@ -8,7 +8,7 @@ export const vectorStore = new SupabaseVectorStore(
   new LocalBgeEmbeddings() as any,
   {
     client: supabase,
-    tableName: "documents_embbeding",
+    tableName: "documents_embedding",
     queryName: "match_documents",
   }
 )

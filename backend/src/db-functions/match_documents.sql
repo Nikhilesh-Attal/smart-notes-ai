@@ -1,5 +1,5 @@
 --copy this code and paste in sql editor of supabase.
---this code create match_document function for table 'documents_embbeding'
+--this code create match_document function for table 'documents_embedding'
 CREATE OR REPLACE FUNCTION match_documents(
     query_embedding vector(384),
     match_count int DEFAULT 5,
@@ -41,7 +41,7 @@ BEGIN
         ed.content,
         ed.metadata,
         1 - (ed.embedding <=> query_embedding) AS similarity
-    FROM documents_embbeding ed
+    FROM documents_embedding ed
     WHERE ed.document_id = ANY(doc_uuid_array)
     ORDER BY ed.embedding <=> query_embedding
     LIMIT match_count;
