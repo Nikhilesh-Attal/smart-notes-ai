@@ -95,8 +95,18 @@ Frontend
 frontend/
   src/
     api/
+      api.tsx   <-in this file we declare code related to supabase
+    context/
+      AuthContext.tsx
     components/
+      Navbar.tsx
+      Footer.tsx
+    pages/
+      Home.tsx
+      Login.tsx
+      Signup.tsx
     App.tsx
+    main.tsx
 Backend
 backend/
   ai/
@@ -115,10 +125,12 @@ backend/
   embed.py
   transcribe.py
   yt-dlp.exe
+
 ⚙️ Installation & Setup
 1️⃣ Clone
 git clone https://github.com/Nikhilesh-Attal/smart-notes-ai.git
 cd smart-notes-ai
+
 🧩 Backend Setup
 Install Node deps
 cd backend
@@ -188,6 +200,9 @@ Ask:
 “Explain the algorithm discussed”
 “Summarize the lecture”
 FLAN generates answer from lecture context
+
+Tech stack:
+tailwind css v4
 
 👥 Team
 
