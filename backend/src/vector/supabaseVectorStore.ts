@@ -17,13 +17,22 @@ export async function matchDocuments(
   embedding: number[],
   k: number
 ) {
-  const { data } = await supabase.rpc(
-    'match_documents',
-    {
-      query_embedding: embedding,
-      match_count: k,
-    }
-  );
+  try {
+    const { data, error } = await supabase.rpc(
+      'match_documents',
+      {
+        query_embedding: embedding,
+        match_count: k,
+      }
+    );
 
-  return data;
+    if (error) {
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error in matchDocuments:", error);
+    throw error;
+  }
 }

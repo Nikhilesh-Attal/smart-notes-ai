@@ -3,13 +3,12 @@ import { splitter } from "../config/splitter";
 import { vectorStore } from "../vector/supabaseVectorStore";
 
 export async function ingestYoutube(url: string, documentId: string) {
-  // Input validation
   if (!url || typeof url !== "string" || !url.trim()) {
-    throw new Error("Invalid URL: URL must be a non-empty string");
+    throw new Error("Invalid URL");
   }
-  
+
   if (!documentId || typeof documentId !== "string" || !documentId.trim()) {
-    throw new Error("Invalid documentId: documentId must be a non-empty string");
+    throw new Error("Invalid documentId");
   }
 
   try {
@@ -22,43 +21,41 @@ export async function ingestYoutube(url: string, documentId: string) {
 
     console.log("[ingestionService] Attaching metadata...");
     const docsWithMeta = chunks
-      .filter(d => d.pageContent && d.pageContent.trim().length > 0)
-      .map(doc => {
-        doc.metadata = {
+      .filter(d => d && typeof d.pageContent === "string" && d.pageContent.trim().length > 0)
+      .map(doc => ({
+        ...doc,
+        metadata: {
           ...doc.metadata,
-          document_id: documentId,
-        };
-        return doc;
-      });
+          documentId: documentId,
+        },
+      }));
 
-    // Filter out any remaining invalid chunks
-    const validDocs = docsWithMeta.filter(d => 
-      d.pageContent && typeof d.pageContent === "string"
-    );
-
-    // Log any chunks that were filtered out
-    const invalidCount = docsWithMeta.length - validDocs.length;
-    if (invalidCount > 0) {
-      console.log(`[ingestionService] Filtered out ${invalidCount} invalid chunks`);
-    }
-
-    // Check if we have valid documents to process
-    if (validDocs.length === 0) {
-      console.warn("[ingestionService] No valid chunks to process");
-      return { ok: true, message: "No valid content to process" };
+    if (docsWithMeta.length === 0) {
+      console.warn("[ingestionService] No valid chunks");
+      return { ok: true };
     }
 
     console.log("[ingestionService] Embedding + storing...");
-    await vectorStore.addDocuments(validDocs);
+    try {
+      await vectorStore.addDocuments(docsWithMeta);
+      console.log("[ingestionService] Successfully stored documents in vector store");
+    } catch (vectorError) {
+      console.error("[ingestionService] Vector store error:", vectorError);
+      
+      // Try to get more details about the error
+      if (vectorError instanceof Error) {
+        console.error("[ingestionService] Error message:", vectorError.message);
+        console.error("[ingestionService] Error stack:", vectorError.stack);
+      }
+      
+      throw vectorError;
+    }
 
     console.log("[ingestionService] Success");
     return { ok: true };
 
   } catch (err) {
-    console.error(
-      "[ingestionService] Error:",
-      err instanceof Error ? err.message : err
-    );
+    console.error("[ingestionService] Error:", err);
     throw err;
   }
 }

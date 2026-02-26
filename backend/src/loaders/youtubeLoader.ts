@@ -5,7 +5,7 @@ export async function youtubeLoader(url: string) {
 
   console.log("[youtubeLoader] captions-first loader active");
   
-  // 1️⃣ Try captions first
+  // 1️ Try captions first
   try {
     const captions = await YoutubeTranscript.fetchTranscript(url);
 
@@ -25,7 +25,7 @@ export async function youtubeLoader(url: string) {
     console.log("[youtubeLoader] Captions unavailable, using audio fallback");
   }
 
-  // 2️⃣ Fallback to your existing pipeline
+  // 2️ Fallback to your existing pipeline
   const transcript = await getYoutubeTranscript(url);
 
   return [

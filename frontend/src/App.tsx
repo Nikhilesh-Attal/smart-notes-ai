@@ -43,38 +43,93 @@ function App() {
 
       const supabase = createSupabaseClient();
 
-      // create conversation
-      await supabase.from("conversations").insert({ id: convId });
+      // create conversation with retry
+      let conversationRetryCount = 0;
+      while (conversationRetryCount < 3) {
+        try {
+          await supabase.from("conversations").insert({ id: convId });
+          break;
+        } catch (error) {
+          conversationRetryCount++;
+          if (conversationRetryCount >= 3) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
-      // create document
-      await supabase.from("documents").insert({ id: docId });
+      // create document with retry
+      let documentRetryCount = 0;
+      while (documentRetryCount < 3) {
+        try {
+          await supabase.from("documents").insert({ id: docId });
+          break;
+        } catch (error) {
+          documentRetryCount++;
+          if (documentRetryCount >= 3) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
-      // link conversation ↔ document
-      await supabase.from("conversation_documents").insert({
-        conversation_id: convId,
-        document_id: docId,
-      });
+      // link conversation ↔ document with retry
+      let linkRetryCount = 0;
+      while (linkRetryCount < 3) {
+        try {
+          await supabase.from("conversation_documents").insert({
+            conversation_id: convId,
+            document_id: docId,
+          });
+          break;
+        } catch (error) {
+          linkRetryCount++;
+          if (linkRetryCount >= 3) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
-      // call backend ingestion
-      const res = await fetch("http://localhost:5000/store-document", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, documentId: docId }),
-      });
+      // call backend ingestion with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
+      
+      try {
+        const res = await fetch("http://localhost:5000/store-document", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, documentId: docId }),
+          signal: controller.signal,
+        });
 
-      const data = await res.json();
-      console.log("Ingestion result:", data);
+        clearTimeout(timeoutId);
 
-      // set active conversation + docs
-      setConversationId(convId);
-      setDocumentIds([docId]);
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Backend error: ${res.status} - ${errorText}`);
+        }
 
-      // reset chat
-      setMessages([]);
-      setPrompt("");
+        const data = await res.json();
+        console.log("Ingestion result:", data);
+
+        if (!data.ok) {
+          throw new Error(data.error || "Backend ingestion failed");
+        }
+
+        // set active conversation + docs
+        setConversationId(convId);
+        setDocumentIds([docId]);
+
+        // reset chat
+        setMessages([]);
+        setPrompt("");
+
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error("Request timed out. Please try again.");
+        }
+        throw fetchError;
+      }
 
     } catch (err) {
       console.error("handleStoreDocument error:", err);
+      alert(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
