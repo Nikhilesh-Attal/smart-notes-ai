@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router-dom";
-// 1. Import the logo from its actual location
-import logo from "./AI_smart_Notes_Logo.png"; 
 import "./Home.css";
 
 function Home() {
@@ -8,7 +6,7 @@ function Home() {
 
   return (
     <div className="home-page-wrapper">
-
+      
       {/* Hero Section */}
       <section className="hero-container">
         <div className="hero-content glass neon-glow">
@@ -60,6 +58,7 @@ function Home() {
       </section>
 
       {/* Footer Section */}
+      {/* Note: If you also have a global <Footer /> in main.tsx, you might want to delete this one too! */}
       <footer className="home-footer">
         <p>© 2026 All rights reserved to Smart Notes AI</p>
       </footer>

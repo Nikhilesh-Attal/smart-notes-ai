@@ -1,0 +1,171 @@
+/* --- Core Dashboard Container --- */
+.chat-page-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #0b0f1a;
+    overflow: hidden;
+}
+
+/* --- Header Integration --- */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    height: 70px;
+    background: rgba(11, 15, 26, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+}
+
+/* --- Layout Structure --- */
+.chat-layout {
+    display: flex;
+    flex: 1; /* Fills remaining space below header */
+    overflow: hidden;
+}
+
+/* --- Sidebar (Refined) --- */
+.sidebar {
+    width: 260px;
+    background: #0d121f;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+.new-btn {
+    padding: 12px;
+    background: #38c16a; /* Unified Brand Green */
+    border: none;
+    border-radius: 12px;
+    color: #0b0f1a;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: all 0.2s ease;
+}
+
+.new-btn:hover {
+    background: #2ea85a;
+    transform: translateY(-1px);
+}
+
+.history p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history p:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #4ade80;
+}
+
+/* --- Main Chat Section --- */
+.chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0b0f1a;
+    position: relative;
+}
+
+/* Messages Area */
+.chat-messages {
+    flex: 1;
+    padding: 40px 15%; /* Centered reading width */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Better Bubbles */
+.chat-bubble {
+    max-width: 75%;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    border-radius: 18px;
+}
+
+.chat-bubble.user {
+    background: #38c16a;
+    color: #0b0f1a;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    font-weight: 500;
+}
+
+.chat-bubble.assistant {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f1f5f9;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+/* --- Improved Input Area --- */
+.chat-input-wrapper {
+    padding: 20px 15% 40px;
+}
+
+.chat-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 100px; /* Cylindrical Dock Style */
+    transition: border-color 0.3s;
+}
+
+.chat-input:focus-within {
+    border-color: #38c16a;
+}
+
+.chat-input input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+.chat-input button {
+    padding: 10px 24px;
+    background: #38c16a;
+    border: none;
+    border-radius: 50px;
+    color: #0b0f1a;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.chat-input button:hover {
+    background: #2ea85a;
+    transform: scale(1.02);
+}

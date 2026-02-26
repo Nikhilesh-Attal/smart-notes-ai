@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 //here we declare supabase related code.
 
+=======
+>>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 import { createClient } from "@supabase/supabase-js";
 
 export function createSupabaseClient() {
@@ -11,4 +14,8 @@ export function createSupabaseClient() {
   }
 
   return createClient(supabaseUrl, supabaseKey);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27

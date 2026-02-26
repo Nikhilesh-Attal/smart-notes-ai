@@ -1,0 +1,414 @@
+Home Page Styling
+
+/* .home-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  text-align: center;
+} 
+
+.home-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  align-content: center;
+}
+
+.home-subtitle {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  margin-bottom: 30px;
+}
+
+.home-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.home-button:hover {
+  background-color: #2563eb;
+}  */
+
+/* Global Reset & Base Theme 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #2f3237; /* Light Background */
+            color: #f8f9fc; /* Dark Text */
+        }
+
+
+        */
+        /* Home Page Styling */
+
+        /*
+.home-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fc;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .home-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: #2f3237;
+            margin-bottom: 15px;
+        }
+
+        .home-subtitle {
+            font-size: 1.25rem;
+            color: #4b5563;
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .home-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .home-button {
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            background-color: #2f3237; /* Dark Primary */
+            color: #f8f9fc; /* Light Text 
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .home-button:hover {
+            background-color: #44484f;
+            transform: translateY(-2px);
+        }
+
+        .home-button.secondary {
+            background-color: transparent;
+            color: #2f3237;
+            border: 2px solid #2f3237;
+            box-shadow: none;
+        }
+
+        .home-button.secondary:hover {
+            background-color: #2f3237;
+            color: #f8f9fc;
+        }
+
+        /* Chat Layout - Sidebar & Main Area 
+        .chat-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2f3237; /* Dark Sidebar *//*
+            color: #f8f9fc;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fc;
+        }
+
+        /* Chat Bubbles *
+        .chat-bubble {
+            max-width: 70%;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .chat-bubble.user {
+            background-color: #2f3237;
+            color: #f8f9fc;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-bubble.assistant {
+            background-color: #e5e7eb;
+            color: #2f3237;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Input Area *
+        .chat-input {
+            display: flex;
+            gap: 12px;
+            padding: 24px;
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            background-color: #f8f9fc;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .chat-input input[type="text"]:focus {
+            border-color: #2f3237;
+        }
+        */
+/* Global Reset & Base Theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: #0b0f1a;
+    color: #f8f9fc;
+    line-height: 1.6;
+}
+
+/* Glassmorphism Utility */
+.glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Home Page Layout */
+.home-page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header Styling - Max Length & Right Aligned Auth */
+.home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 3rem;
+    margin-top: 20px;
+    width: 95%; /* Maximized length */
+    max-width: 1400px;
+    border-radius: 100px;
+    z-index: 1000;
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-glow-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #a855f7, #4ade80);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.info-nav {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-link, .text-btn {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.nav-link:hover, .text-btn:hover {
+    color: #4ade80;
+}
+
+.header-auth {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.primary-btn {
+    background-color: #4ade80;
+    color: #0b0f1a;
+    padding: 8px 24px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.primary-btn:hover {
+    background-color: #38c16a;
+    transform: translateY(-1px);
+}
+
+/* Hero Content */
+.hero-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+}
+
+.hero-content {
+    text-align: center;
+    padding: 80px 40px;
+    border-radius: 40px;
+    max-width: 900px;
+    box-shadow: 0 0 80px rgba(168, 85, 247, 0.15);
+}
+
+.home-title {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.gradient-highlight {
+    background: linear-gradient(90deg, #a855f7, #4ade80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.home-subtitle {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    margin-bottom: 40px;
+    max-width: 650px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main-cta {
+    padding: 20px 400px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    background: #4ade80;
+    color: #0b0f1a;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(74, 222, 128, 0.3);
+    transition: 0.3s ease;
+}
+
+.main-cta:hover {
+    transform: scale(1.05);
+}
+
+/* Bento Grid Styling */
+.bento-section {
+    width: 90%;
+    max-width: 1100px;
+    padding-bottom: 100px;
+}
+
+.section-label {
+    margin-bottom: 30px;
+    font-size: 1.5rem;
+    color: #94a3b8;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.bento-card {
+    padding: 30px;
+    border-radius: 30px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.bento-card:hover {
+    border-color: #a855f7;
+    transform: translateY(-5px);
+}
+
+.visual-box {
+    height: 80px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Bento Visual Elements */
+.dot { width: 15px; height: 15px; border-radius: 50%; margin: 5px; }
+.dot.p { background: #a855f7; box-shadow: 0 0 10px #a855f7; }
+.dot.g { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+
+.progress-bar { width: 100px; height: 10px; background: #334155; border-radius: 10px; overflow: hidden; }
+.progress-fill { width: 70%; height: 100%; background: #4ade80; }
+
+.waveform {
+    width: 60px;
+    height: 30px;
+    background: repeating-linear-gradient(90deg, #a855f7, #a855f7 2px, transparent 2px, transparent 6px);
+}
+
+.search-icon { font-size: 2rem; }
+
+/* Footer Section */
+.home-footer {
+    padding: 60px;
+    color: #475569;
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    width: 100%;
+    text-align: center;
+}

@@ -1,9 +1,15 @@
+<<<<<<< HEAD
 import sys, json
+=======
+import sys
+import json
+>>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 from sentence_transformers import SentenceTransformer
 
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
 def embed(texts):
+<<<<<<< HEAD
     # ensure list of non-empty strings
     clean = []
     for t in texts:
@@ -44,3 +50,13 @@ if __name__ == "__main__":
         print(json.dumps(vectors))
     except Exception as e:
         print(json.dumps([]))
+=======
+    embeddings = model.encode(texts, normalize_embeddings=True)
+    return embeddings.tolist()
+
+if __name__ == "__main__":
+    input_json = sys.stdin.read()
+    texts = json.loads(input_json)
+    vectors = embed(texts)
+    print(json.dumps(vectors))
+>>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27

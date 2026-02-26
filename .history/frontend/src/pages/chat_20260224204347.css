@@ -1,0 +1,139 @@
+/* --- Core Dashboard Container --- */
+.chat-page-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #0b0f1a;
+    overflow: hidden; /* Prevents whole-page bouncing on mobile */
+}
+
+/* --- Header Integration --- */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    height: 70px;
+    background: rgba(11, 15, 26, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+    flex-shrink: 0; /* Ensures header doesn't compress */
+}
+
+/* --- Layout Structure --- */
+.chat-layout {
+    display: flex;
+    flex: 1; 
+    overflow: hidden; /* Important for independent section scrolling */
+}
+
+/* --- Sidebar (Refined) --- */
+.sidebar {
+    width: 260px;
+    background: #0d121f;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Ensure history scrolls if it's too long */
+.history {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+/* Hide scrollbar for a cleaner look while keeping functionality */
+.history::-webkit-scrollbar {
+    width: 4px;
+}
+.history::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.sidebar h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+.new-btn {
+    padding: 12px;
+    background: #38c16a; 
+    border: none;
+    border-radius: 12px;
+    color: #0b0f1a;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.new-btn:hover {
+    background: #2ea85a;
+    transform: translateY(-1px);
+}
+
+.history p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history p:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #4ade80;
+}
+
+/* --- Main Chat Section --- */
+.chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #0b0f1a;
+    position: relative;
+}
+
+/* Messages Area - Added smooth scrolling */
+.chat-messages {
+    flex: 1;
+    padding: 40px 15%; 
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+}
+
+/* --- Improved Input Area --- */
+.chat-input-wrapper {
+    padding: 20px 15% 40px;
+    background: linear-gradient(to top, #0b0f1a 80%, transparent); /* Subtle fade behind input */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1024px) {
+    .chat-messages, .chat-input-wrapper {
+        padding-left: 5%;
+        padding-right: 5%;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none; /* Usually, you'd implement a hamburger menu here */
+    }
+}

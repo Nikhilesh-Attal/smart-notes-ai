@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from "react";
 
 interface FileUploadProps {
@@ -24,6 +25,14 @@ const FileUpload = ({ onFileSelect, disabled }: FileUploadProps) => {
         accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
         onChange={handleFileChange}
         disabled={disabled}
+=======
+const FileUpload = () => {
+  return (
+    <div style={{ padding: "10px 20px" }}>
+      <input
+        type="file"
+        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+>>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
       />
     </div>
   );
