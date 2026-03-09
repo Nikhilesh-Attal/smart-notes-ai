@@ -95,11 +95,14 @@ Frontend
 frontend/
   src/
     api/
-<<<<<<< HEAD
       api.tsx   <-in this file we declare code related to supabase
     context/
       AuthContext.tsx
     components/
+      ChatWindow.tsx
+      FileUpload.tsx
+      PrivateRoute.tsx
+      Input.tsx
       Navbar.tsx
       Footer.tsx
     pages/
@@ -108,10 +111,6 @@ frontend/
       Signup.tsx
     App.tsx
     main.tsx
-=======
-    components/
-    App.tsx
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 Backend
 backend/
   ai/
@@ -130,18 +129,12 @@ backend/
   embed.py
   transcribe.py
   yt-dlp.exe
-<<<<<<< HEAD
 
-=======
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 ⚙️ Installation & Setup
 1️⃣ Clone
 git clone https://github.com/Nikhilesh-Attal/smart-notes-ai.git
 cd smart-notes-ai
-<<<<<<< HEAD
 
-=======
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 🧩 Backend Setup
 Install Node deps
 cd backend
@@ -212,12 +205,9 @@ Ask:
 “Summarize the lecture”
 FLAN generates answer from lecture context
 
-<<<<<<< HEAD
 Tech stack:
 tailwind css v4
 
-=======
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 👥 Team
 
 Nikhilesh Attal — Backend & AI Architecture

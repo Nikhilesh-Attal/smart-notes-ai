@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import storeDocumentRouter from './routers/storeDocumentRoutes';
 import queryDocumentRouter from './routers/queryDocumentRoutes';
+import uploadDocumentRouter from './routers/uploadDocumentRoutes';
 const app = express();
 
 app.use(express.json());
@@ -17,5 +18,6 @@ app.use(cors(corsOptions));
 
 app.use('/store-document', storeDocumentRouter);
 app.use('/query-document', queryDocumentRouter);
+app.use('/upload-document', uploadDocumentRouter);
 console.log("App.tsx file running");
 export default app;
