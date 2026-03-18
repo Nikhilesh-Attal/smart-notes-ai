@@ -5,28 +5,23 @@ export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   return (
-    <nav className="bg-gray-900 border-b border-gray-700">
+    <nav className="bg-gray-900 border-b border-gray-700 w-full">
       <div className="mx-auto max-w-7xl px-6">
         <div className="flex h-16 items-center justify-between">
           
           {/* Left */}
           <div className="flex items-center gap-8">
             <div className="text-white font-semibold text-lg">
-              AI Chat
+              Smart Notes.AI
             </div>
 
             <div className="hidden sm:flex gap-4">
               <Link to="/" className="px-3 py-2 text-sm text-gray-300 hover:text-white">
                 Home
               </Link>
-              <Link to="/team" className="px-3 py-2 text-sm text-gray-300 hover:text-white">
-                Team
-              </Link>
+              
               <Link to="/signup" className="px-3 py-2 text-sm text-gray-300 hover:text-white">
                 Signup
-              </Link>
-              <Link to="/calendar" className="px-3 py-2 text-sm text-gray-300 hover:text-white">
-                Calendar
               </Link>
             </div>
           </div>

@@ -95,7 +95,6 @@ Frontend
 frontend/
   src/
     api/
-<<<<<<< HEAD
       api.tsx   <-in this file we declare code related to supabase
     context/
       AuthContext.tsx
@@ -108,10 +107,6 @@ frontend/
       Signup.tsx
     App.tsx
     main.tsx
-=======
-    components/
-    App.tsx
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 Backend
 backend/
   ai/

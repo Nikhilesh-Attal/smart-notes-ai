@@ -1,76 +1,29 @@
-<<<<<<< HEAD
-=======
-{/*Responsibility:
+/*Responsibility:
 1. call loader
 2. split
 3. attach metadata
 4. store vectors
-5. return result */}
+5. return result */
 
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 import { youtubeLoader } from "../loaders/youtubeLoader";
+import { documentLoader } from "../loaders/documentLoader";
 import { splitter } from "../config/splitter";
 import { vectorStore } from "../vector/supabaseVectorStore";
 
-export async function ingestYoutube(url: string, documentId: string) {
-<<<<<<< HEAD
-  if (!url || typeof url !== "string" || !url.trim()) {
-    throw new Error("Invalid URL");
-  }
-
-  if (!documentId || typeof documentId !== "string" || !documentId.trim()) {
-    throw new Error("Invalid documentId");
-  }
-
-  try {
-    console.log("[ingestionService] Loading transcript...");
-    const docs = await youtubeLoader(url);
-
-    console.log("[ingestionService] Splitting transcript...");
-    const chunks = await splitter.splitDocuments(docs);
-    console.log("[ingestionService] Chunks:", chunks.length);
-
-    console.log("[ingestionService] Attaching metadata...");
-    const docsWithMeta = chunks
-      .filter(d => d && typeof d.pageContent === "string" && d.pageContent.trim().length > 0)
-      .map(doc => ({
-        ...doc,
-        metadata: {
-          ...doc.metadata,
-          documentId: documentId,
-        },
-      }));
-
-    if (docsWithMeta.length === 0) {
-      console.warn("[ingestionService] No valid chunks");
-      return { ok: true };
-    }
-
-    console.log("[ingestionService] Embedding + storing...");
-    try {
-      await vectorStore.addDocuments(docsWithMeta);
-      console.log("[ingestionService] Successfully stored documents in vector store");
-    } catch (vectorError) {
-      console.error("[ingestionService] Vector store error:", vectorError);
-      
-      // Try to get more details about the error
-      if (vectorError instanceof Error) {
-        console.error("[ingestionService] Error message:", vectorError.message);
-        console.error("[ingestionService] Error stack:", vectorError.stack);
-      }
-      
-      throw vectorError;
-    }
-
-    console.log("[ingestionService] Success");
-    return { ok: true };
-
-  } catch (err) {
-    console.error("[ingestionService] Error:", err);
-    throw err;
-  }
+// Import Express types for Multer.File
+interface MulterFile {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  size: number;
+  destination: string;
+  filename: string;
+  path: string;
+  buffer: Buffer;
 }
-=======
+
+export async function ingestYoutube(url: string, documentId: string) {
   try {
     const docs = await youtubeLoader(url);
 
@@ -90,7 +43,7 @@ export async function ingestYoutube(url: string, documentId: string) {
   } catch (err: any) {
     console.error("[ingestionService] Error during YouTube ingestion:", err.message);
     
-    // Pass through the actual error message
+    // Pass through actual error message
     return {
       ok: false,
       reason: err.message || "UNKNOWN_ERROR",
@@ -98,4 +51,46 @@ export async function ingestYoutube(url: string, documentId: string) {
     };
   }
 }
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
+
+export async function ingestDocument(file: MulterFile, documentId: string) {
+  try {
+    console.log("[ingestionService] Processing file upload for documentId:", documentId);
+
+    // 1. Load and parse the document
+    const docs = await documentLoader(file.buffer, file.originalname);
+    console.log(`[ingestionService] Successfully loaded ${docs.length} document(s) from ${file.originalname}`);
+
+    // 2. Split documents into chunks
+    const chunks = await splitter.splitDocuments(docs);
+    console.log(`[ingestionService] Split into ${chunks.length} chunks`);
+
+    // 3. Attach metadata to each chunk
+    const docsWithMeta = chunks.map((chunk: any) => ({
+      ...chunk,
+      metadata: {
+        ...chunk.metadata,
+        documentId,
+        filename: file.originalname,
+        uploadedAt: new Date().toISOString(),
+      },
+    }));
+
+    // 4. Store vectors in Supabase
+    await vectorStore.addDocuments(docsWithMeta);
+    console.log(`[ingestionService] Successfully stored ${docsWithMeta.length} chunks in vector store`);
+
+    return { 
+      ok: true,
+      message: `Successfully processed ${file.originalname}`,
+      chunksProcessed: docsWithMeta.length
+    };
+  } catch (err: any) {
+    console.error("[ingestionService] Error during document ingestion:", err.message);
+
+    return {
+      ok: false,
+      reason: err.message || "UNKNOWN_ERROR",
+      error: err.message
+    };
+  }
+}

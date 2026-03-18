@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import { YoutubeTranscript } from "youtube-transcript";
+{/*import { YoutubeTranscript } from "youtube-transcript";
 import { getYoutubeTranscript } from "../utils/youtubeTranscript";
 
 export async function youtubeLoader(url: string) {
@@ -38,7 +37,8 @@ export async function youtubeLoader(url: string) {
       },
     },
   ];
-=======
+*/}
+
 import { getYoutubeTranscript } from "../utils/youtubeTranscript";
 
 export async function youtubeLoader(url: string) {
@@ -67,5 +67,4 @@ export async function youtubeLoader(url: string) {
     // Pass through the actual error message instead of generic one
     throw err; 
   }
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
 }
