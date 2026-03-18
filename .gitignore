@@ -30,3 +30,13 @@ tmp/
 
 # test files
 test-*
+
+
+
+node_modules/
+.env
+dist/
+build/
+package-lock.json
+backend/node_modules/
+frontend/node_modules/
