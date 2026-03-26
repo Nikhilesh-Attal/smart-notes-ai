@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="text-white text-lg font-semibold mb-3">
-              AI Chat
+              Smart Notes.AI
             </div>
             <p className="text-sm text-gray-400">
               Chat with your documents and videos using AI.
@@ -43,19 +43,6 @@ export default function Footer() {
               <li><a href="#" className="hover:text-white">Privacy</a></li>
               <li><a href="#" className="hover:text-white">Terms</a></li>
             </ul>
-          </div>
-        </div>
-
-        {/* Bottom */}
-        <div className="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-gray-700 pt-6">
-          <span className="text-sm text-gray-400">
-            © {new Date().getFullYear()} AI Chat. All rights reserved.
-          </span>
-
-          <div className="flex gap-4 text-gray-400">
-            <a href="#" className="hover:text-white">Twitter</a>
-            <a href="#" className="hover:text-white">GitHub</a>
-            <a href="#" className="hover:text-white">Discord</a>
           </div>
         </div>
       </div>

@@ -1,62 +1,64 @@
-<<<<<<< HEAD
-import sys, json
-=======
 import sys
 import json
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
+import os
+import io
+
+# 1. FORCE UTF-8 FOR WINDOWS (Fixes the ENCODE_ERROR)
+sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+# 2. FORCE OFFLINE MODE (Stops requests to Hugging Face)
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+os.environ["TRANSFORMERS_VERBOSITY"] = "error"
+
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+# 3. LOAD MODEL (Device 'cpu' is safest for local testing)
+try:
+    model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
+except Exception as e:
+    sys.stderr.write(f"MODEL_LOAD_ERROR: {str(e)}")
+    sys.exit(1)
 
-def embed(texts):
-<<<<<<< HEAD
-    # ensure list of non-empty strings
-    clean = []
-    for t in texts:
-        if isinstance(t, dict):
-            content = t.get("pageContent") or t.get("text") or ""
-        else:
-            content = str(t)
-        
-        # Only add non-empty strings
-        if content and content.strip():
-            clean.append(content.strip())
-    
-    # Handle case where no valid texts remain
-    if not clean:
-        return []
-    
+def main():
     try:
-        # Try encoding one by one to isolate the issue
-        embeddings = []
-        for text in clean:
-            embedding = model.encode([text], normalize_embeddings=True)
-            # Convert numpy array to Python list
-            embeddings.append(embedding[0].tolist())
+        input_data = sys.stdin.read().strip()
+        if not input_data:
+            return
+
+        raw_payload = json.loads(input_data)
         
-        return embeddings
+        # 4. STRICT STRING CLEANING
+        processed_texts = []
+        # Handle if Node sends a single string or a list
+        items = raw_payload if isinstance(raw_payload, list) else [raw_payload]
+
+        for item in items:
+            if item is None:
+                continue
+            # If it's a dict (from LangChain), get content. Otherwise, force to string.
+            if isinstance(item, dict):
+                val = item.get("pageContent") or item.get("text") or str(item)
+            else:
+                val = str(item)
+            
+            processed_texts.append(val)
+
+        if not processed_texts:
+            return
+
+        # 5. GENERATE EMBEDDINGS (No progress bar to keep stdout clean)
+        embeddings = model.encode(processed_texts, show_progress_bar=False)
+        
+        # 6. OUTPUT ONLY THE JSON
+        print(json.dumps(embeddings.tolist()))
+        sys.stdout.flush()
+        
     except Exception as e:
-        # Fallback: try with single text if batch fails
-        if clean:
-            embedding = model.encode(clean[0], normalize_embeddings=True)
-            return embedding.tolist()
-        return []
+        sys.stderr.write(f"ENCODE_ERROR: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    try:
-        input_data = sys.stdin.read()
-        texts = json.loads(input_data)
-        vectors = embed(texts)
-        print(json.dumps(vectors))
-    except Exception as e:
-        print(json.dumps([]))
-=======
-    embeddings = model.encode(texts, normalize_embeddings=True)
-    return embeddings.tolist()
-
-if __name__ == "__main__":
-    input_json = sys.stdin.read()
-    texts = json.loads(input_json)
-    vectors = embed(texts)
-    print(json.dumps(vectors))
->>>>>>> 93fe1ef398e2d753a267bb1a0b001e4b4daf0f27
+    main()

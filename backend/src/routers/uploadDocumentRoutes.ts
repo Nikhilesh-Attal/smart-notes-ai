@@ -1,29 +1,36 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import multer from "multer";
-import { uploadDocumentService } from "../services/uploadDocumentService";
+import { ingestDocument } from "../services/ingestionService";
 
 const router = express.Router();
 
-// store file temporarily in memory
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+});
 
-router.post("/", upload.single("file"), async (req, res) => {
+router.post("/", upload.single("file"), async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+      res.status(400).json({ error: "No file provided" });
+      return;
     }
 
-    const result = await uploadDocumentService(req.file);
+    const documentId = req.body.documentId;
+    if (!documentId) {
+      res.status(400).json({ error: "Document ID is required" });
+      return;
+    }
 
-    res.json({
-      message: "Document uploaded and processed",
-      chunks: result.chunks
-    });
+    const result = await ingestDocument(req.file, documentId);
 
+    res.status(200).json(result);
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ error: "Upload failed" });
+    console.error("Error in uploadDocument:", error);
+    res.status(500).json({ error: "An error occurred during the upload." });
   }
 });
 

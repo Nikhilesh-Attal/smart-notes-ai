@@ -21,7 +21,9 @@ const FileUpload = ({ onFileSelect, disabled }: FileUploadProps) => {
     <div className="file-upload-container" style={{ padding: "10px 20px" }}>
       <input
         type="file"
-        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+        id="file-upload-input"
+        name="file-upload"
+        accept=".pdf,.txt"
         onChange={handleFileChange}
         disabled={disabled}
       />

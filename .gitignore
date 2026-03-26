@@ -7,3 +7,36 @@
 # Ignore Mac/Windows system files
 .DS_Store
 Thumbs.db
+
+# build
+dist/
+build/
+
+# env
+.env
+
+# logs
+*.log
+
+# OS files
+.DS_Store
+
+# zip / temp
+*.zip
+tmp/
+
+# media
+*.webm
+
+# test files
+test-*
+
+
+
+node_modules/
+.env
+dist/
+build/
+package-lock.json
+backend/node_modules/
+frontend/node_modules/
