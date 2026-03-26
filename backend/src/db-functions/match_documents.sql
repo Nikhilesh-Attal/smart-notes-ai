@@ -1,5 +1,3 @@
---copy this code and paste in sql editor of supabase.
---this code create match_document function for table 'documents_embedding'
 CREATE OR REPLACE FUNCTION match_documents(
     query_embedding vector(384),
     match_count int DEFAULT 5,
@@ -12,6 +10,7 @@ RETURNS TABLE(
     similarity float
 )
 LANGUAGE plpgsql
+SECURITY INVOKER 
 AS $$
 DECLARE
     doc_uuid_array uuid[];

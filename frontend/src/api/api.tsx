@@ -10,5 +10,11 @@ export function createSupabaseClient() {
     throw new Error("Supabase credentials are not configured");
   }
 
-  return createClient(supabaseUrl, supabaseKey);
+  return createClient(supabaseUrl, supabaseKey, {
+    auth:{
+      persistSession: true, //tell supabase to save the session
+      autoRefreshToken: true, //automatically refresh the session when it expires
+      storage: window.localStorage, //use localStorage to store the session
+    }
+  });
 }

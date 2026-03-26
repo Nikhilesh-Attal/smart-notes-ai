@@ -39,10 +39,20 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 Make sure you have the following tables in your Supabase database:
 
 ```sql
+-- ==========================================
+-- 0. ENABLE EXTENSIONS
+-- ==========================================
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- ==========================================
+-- 1. CREATE TABLES (With user_id for isolation)
+-- ==========================================
+
 -- Documents table
 CREATE TABLE public.documents (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
+  user_id uuid not null references auth.users(id) on delete cascade,
   constraint documents_pkey primary key (id)
 );
 
@@ -50,6 +60,7 @@ CREATE TABLE public.documents (
 CREATE TABLE public.conversations (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
+  user_id uuid not null references auth.users(id) on delete cascade,
   constraint conversations_pkey primary key (id)
 );
 
@@ -57,9 +68,10 @@ CREATE TABLE public.conversations (
 CREATE TABLE public.conversation_documents (
   conversation_id uuid not null,
   document_id uuid not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
   constraint conversation_documents_pkey primary key (conversation_id, document_id),
-  constraint conversation_documents_conversation_id_fkey foreign key (conversation_id) references conversations (id),
-  constraint conversation_documents_document_id_fkey foreign key (document_id) references documents (id)
+  constraint conversation_documents_conversation_id_fkey foreign key (conversation_id) references conversations (id) on delete cascade,
+  constraint conversation_documents_document_id_fkey foreign key (document_id) references documents (id) on delete cascade
 );
 
 -- Messages table
@@ -69,8 +81,9 @@ CREATE TABLE public.conversation_messages (
   conversation_id uuid not null,
   role text not null,
   content text not null,
+  user_id uuid not null references auth.users(id) on delete cascade,
   constraint conversation_messages_pkey primary key (id),
-  constraint conversation_messages_conversation_id_fkey foreign key (conversation_id) references conversations (id)
+  constraint conversation_messages_conversation_id_fkey foreign key (conversation_id) references conversations (id) on delete cascade
 );
 
 -- Documents embedding table (for vector search)
@@ -80,20 +93,36 @@ CREATE TABLE public.documents_embedding (
   content text null,
   metadata jsonb null,
   document_id uuid GENERATED ALWAYS as (((metadata ->> 'documentId'::text))::uuid) STORED null,
-  embedding extensions.vector null,
-  constraint documents_pkey primary key (id),
-  constraint documents_id_key unique (id)
+  embedding vector(384) null,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  constraint documents_embedding_pkey primary key (id)
 );
 
--- Enable vector extension
-CREATE EXTENSION IF NOT EXISTS vector;
-```
+-- ==========================================
+-- 2. ENABLE ROW LEVEL SECURITY (RLS)
+-- ==========================================
+ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversation_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversation_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.documents_embedding ENABLE ROW LEVEL SECURITY;
 
-## Vector Search Function
+-- ==========================================
+-- 3. CREATE SECURITY POLICIES
+-- ==========================================
+-- These ensure users can only interact with rows that match their auth token
 
-Run this SQL in your Supabase SQL Editor:
+CREATE POLICY "Users can manage their own documents" ON public.documents FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own conversations" ON public.conversations FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own conversation_documents" ON public.conversation_documents FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own messages" ON public.conversation_messages FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own embeddings" ON public.documents_embedding FOR ALL USING (auth.uid() = user_id);
 
-```sql
+-- ==========================================
+-- 4. SECURE THE VECTOR SEARCH FUNCTION
+-- ==========================================
+-- SECURITY INVOKER forces the function to respect the RLS policies above
+
 CREATE OR REPLACE FUNCTION match_documents(
     query_embedding vector(384),
     match_count int DEFAULT 5,
@@ -106,6 +135,7 @@ RETURNS TABLE(
     similarity float
 )
 LANGUAGE plpgsql
+SECURITY INVOKER 
 AS $$
 DECLARE
     doc_uuid_array uuid[];
