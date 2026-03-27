@@ -14,18 +14,34 @@ const upload = multer({
 
 router.post("/", upload.single("file"), async (req: Request, res: Response): Promise<void> => {
   try {
+    // 1. EXTRACT THE SECURITY TOKEN
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ error: "Unauthorized: Missing or invalid token" });
+      return;
+    }
+    const token = authHeader.split(' ')[1];
+
+    // 2. VALIDATE FILE
     if (!req.file) {
       res.status(400).json({ error: "No file provided" });
       return;
     }
 
+    // 3. VALIDATE DOCUMENT ID
     const documentId = req.body.documentId;
     if (!documentId) {
       res.status(400).json({ error: "Document ID is required" });
       return;
     }
 
-    const result = await ingestDocument(req.file, documentId);
+    // 4. PASS THE TOKEN TO THE INGESTION SERVICE
+    const result = await ingestDocument(req.file, documentId, token);
+
+    if (!result.ok) {
+        res.status(500).json({ error: result.reason || "Upload failed" });
+        return;
+    }
 
     res.status(200).json(result);
   } catch (error) {

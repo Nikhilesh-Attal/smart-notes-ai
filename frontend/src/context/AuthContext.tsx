@@ -43,7 +43,8 @@ type AuthProviderProps = {
  * ===================== */
 export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
-
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);  //add a loading state to show when the app is loading
+  
   /** -------- SIGNUP -------- */
   const signUpNewUser = async ({ email, password, fullName }: Credentials): Promise<AuthResponse> => {
     try {
@@ -115,6 +116,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session ?? null);
+      setIsInitializing(false);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
@@ -128,6 +130,16 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
     };
   }, []);
 
+  // Do not render the app until Supabase has checked local storage!
+  if (isInitializing) {
+    // You can replace this with a nice spinner component later
+    return (
+      <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+        Loading session...
+      </div>
+    );
+  }
+  
   return (
     <AuthContext.Provider
       value={{

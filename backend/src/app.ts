@@ -12,16 +12,19 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 const defaultAllowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:5174",
   "http://127.0.0.1:5174",
 ];
+
 const envAllowedOrigins = (process.env.CORS_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
+  
 const allowedOrigins = new Set([...defaultAllowedOrigins, ...envAllowedOrigins]);
 
 const isAllowedOrigin = (origin: string): boolean => {
@@ -50,15 +53,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 
-// app.use("/store-document", storeDocumentRouter);
-// app.use("/query-document", queryDocumentRouter);
-// app.use("/upload-document", uploadDocumentRouter);
-
-// console.log("Backend app running");
-
-// <<<<<<< HEAD
 app.use('/store-document', storeDocumentRouter);
 app.use('/query-document', queryDocumentRouter);
 app.use('/upload-document', uploadDocumentRouter);
+
 console.log("App.tsx file running");
+
 export default app;

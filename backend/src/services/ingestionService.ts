@@ -9,7 +9,9 @@
 import { youtubeLoader } from "../loaders/youtubeLoader";
 import { documentLoader } from "../loaders/documentLoader";
 import { splitter } from "../config/splitter";
-import { vectorStore } from "../vector/supabaseVectorStore";
+import { createSupabaseClient } from "../helpers/supabseClientHelpers";
+import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
+import { LocalBgeEmbeddings } from "../vector/localBgeEmbeddinds";
 
 // Multer file type
 interface MulterFile {
@@ -24,8 +26,15 @@ interface MulterFile {
   buffer: Buffer;
 }
 
-export async function ingestYoutube(url: string, documentId: string) {
+export async function ingestYoutube(url: string, documentId: string, token: string) {
   try {
+
+    //initialize secure user client
+    const supabase = createSupabaseClient(token);
+    const { data: {user}, error: authError } = await supabase.auth.getUser();
+    if(authError || !user) throw new Error("[ingestionService] unauthorized: invalid token");
+    const userId = user.id;
+
     // 1. Load youtube transcript
     const docs = await youtubeLoader(url);
 
@@ -38,11 +47,20 @@ export async function ingestYoutube(url: string, documentId: string) {
       metadata: {
         ...c.metadata,
         documentId,
+        userId,
       },
     }));
 
+    //initialize user-scoped vector and insert
+    const embeddings = new LocalBgeEmbeddings();
+    const userVectorStore = new SupabaseVectorStore(embeddings, {
+      client: supabase,
+      tableName: "documents_embedding",
+      queryName: "match_documents",
+    })
+
     // 4. Store vectors
-    await vectorStore.addDocuments(docsWithMeta);
+    await userVectorStore.addDocuments(docsWithMeta);
 
     // 5. Return result
     return { ok: true };
@@ -60,12 +78,19 @@ export async function ingestYoutube(url: string, documentId: string) {
   }
 }
 
-export async function ingestDocument(file: MulterFile, documentId: string) {
+export async function ingestDocument(file: MulterFile, documentId: string, token: string) {
   try {
     console.log(
       "[ingestionService] Processing file upload for documentId:",
       documentId
     );
+
+    //initialize secure user client
+    const supabase = createSupabaseClient(token);
+    const { data: {user}, error: authError } = await supabase.auth.getUser();
+    if(authError || !user) throw new Error("[ingestionService] unauthorized: invalid token");
+    const userId = user.id;
+
 
     // 1. Load and parse document
     const docs = await documentLoader(file.buffer, file.originalname);
@@ -83,14 +108,23 @@ export async function ingestDocument(file: MulterFile, documentId: string) {
       metadata: {
         ...chunk.metadata,
         documentId, // Still keep it in metadata for safety
+        userId,
         filename: file.originalname,
         uploadAt: new Date().toISOString(),
       },
     }));
 
+    //initialize user-scoped vector and insert
+    const embeddings = new LocalBgeEmbeddings();
+    const userVectorStore = new SupabaseVectorStore(embeddings, {
+      client: supabase,
+      tableName: "documents_embedding",
+      queryName: "match_documents",
+    })
+
     // 4. Store vectors
     console.log("[ingestionService] Generating embeddings and storing in Supabase...");
-    await vectorStore.addDocuments(docsWithMeta);
+    await userVectorStore.addDocuments(docsWithMeta);
     console.log(
       `[ingestionService] Successfully stored ${docsWithMeta.length} chunks in vector store`
     );

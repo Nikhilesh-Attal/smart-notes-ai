@@ -1,25 +1,26 @@
-import pdfParse from "pdf-parse";
-import { chunkText } from "../utils/chunkText";
-import { LocalBgeEmbeddings } from "../vector/localBgeEmbeddinds";
-import { storeDocumentChunks } from "../vector/supabaseVectorStore";
+import { ingestDocument } from "./ingestionService";
+import { Request } from "express";
 
-export const uploadDocumentService = async (file: Express.Multer.File) => {
+export const uploadDocumentService = async (req: Request, file: Express.Multer.File) => {
+  const { documentId } = req.body;
 
-  const pdfData = await (pdfParse as any)(file.buffer);
-  const text = pdfData.text;
+  // 1. EXTRACT THE TOKEN
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error("Unauthorized: Missing token");
+  }
+  const token = authHeader.split(' ')[1];
 
-  if (!text || text.length < 20) {
-    throw new Error("Could not extract text from PDF");
+  console.log("[uploadDocumentService] Routing file to ingestion service...");
+
+  // 2. PASS FILE, ID, AND TOKEN TO INGESTION SERVICE
+  const result = await ingestDocument(file, documentId, token);
+
+  if (!result.ok) {
+    throw new Error(result.reason || "Failed to process PDF");
   }
 
-  const chunks = chunkText(text);
-
-  const embeddingsModel = new LocalBgeEmbeddings();
-  const embeddings = await embeddingsModel.embedDocuments(chunks);
-
-  await storeDocumentChunks(chunks, embeddings);
-
   return {
-    chunks: chunks.length
+    chunks: result.chunksProcessed
   };
 };

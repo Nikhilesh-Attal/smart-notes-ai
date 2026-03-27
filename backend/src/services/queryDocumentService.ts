@@ -4,7 +4,6 @@
 import { Request } from 'express'
 import { createSupabaseClient } from '../helpers/supabseClientHelpers'
 import { LocalBgeEmbeddings } from '../vector/localBgeEmbeddinds'
-import { vectorStore } from '../vector/supabaseVectorStore'
 import { answerFromContext } from '../ai/flan'
 import { rewriteQuestionWithHistory } from '../ai/rewriteQuestion'
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
@@ -14,18 +13,31 @@ export async function queryDocumentService(req: Request){
     try{
         const { query, conversationId, documentId} = req.body
 
+        //Extract and verify the token from react
+        const authHeader = req.headers.authorization;
+        if(!authHeader || !authHeader.startsWith('Bearer ')){
+            throw new Error("[queryDocumentService] Missing or invalid authorization header");
+        }
+        const token = authHeader.split(' ')[1];
+
+        //create a secure, user-scoped supabase client
         //initialize supabase client
-        const supabase = createSupabaseClient()
+        const supabase = createSupabaseClient(token)
+
+        //get verified user id from token
+        const { data: {user}, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error("[queryDocumentService] unauthorized: invalid token");
+        const userId = user.id;
 
         //1. store users query
         await supabase.from("conversation_messages").insert({
+            user_id: userId,
             conversation_id: conversationId,
             role: "user",
             content: query,
         })
 
         // 2. grab the conversation history
-
         const {data: previousMessages } = await supabase.from("conversation_messages").select("*").eq("conversation_id", conversationId).order("created_at", { ascending: false}).limit(14)
 
         // 3. initialize embedding models and LLM models
@@ -55,6 +67,7 @@ export async function queryDocumentService(req: Request){
         
         // 7. store the assistant's response
         await supabase.from("conversation_messages").insert({
+            user_id: userId,
             conversation_id: conversationId,
             role: "assistant",
             content: response,

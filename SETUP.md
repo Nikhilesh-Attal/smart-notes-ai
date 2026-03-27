@@ -171,6 +171,18 @@ BEGIN
     LIMIT match_count;
 END;
 $$;
+
+-- 1. Temporarily remove the RLS policy
+DROP POLICY IF EXISTS "Users can manage their own embeddings" ON public.documents_embedding;
+
+-- 2. Drop and recreate the user_id column as a generated column
+ALTER TABLE public.documents_embedding DROP COLUMN user_id;
+ALTER TABLE public.documents_embedding 
+ADD COLUMN user_id uuid GENERATED ALWAYS AS (((metadata ->> 'userId'::text))::uuid) STORED NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE;
+
+-- 3. Put the exact same RLS policy back
+CREATE POLICY "Users can manage their own embeddings" ON public.documents_embedding FOR ALL USING (auth.uid() = user_id);
+
 ```
 
 ## Running the Application
