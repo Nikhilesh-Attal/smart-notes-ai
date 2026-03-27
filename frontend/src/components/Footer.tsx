@@ -30,9 +30,8 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3">Company</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white">About</a></li>
-              <li><a href="#" className="hover:text-white">Blog</a></li>
-              <li><a href="#" className="hover:text-white">Careers</a></li>
+              <li><Link to="/about" className="hover:text-white">About</Link></li>
+              <li><Link to="/contact" className="hover:text-white">Contact Us</Link></li>
             </ul>
           </div>
 
@@ -40,8 +39,8 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3">Legal</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white">Privacy</a></li>
-              <li><a href="#" className="hover:text-white">Terms</a></li>
+              <li><Link to="#" className="hover:text-white">Privacy</Link></li>
+              <li><Link to="#" className="hover:text-white">Terms</Link></li>
             </ul>
           </div>
         </div>

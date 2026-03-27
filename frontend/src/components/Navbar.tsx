@@ -12,7 +12,7 @@ export default function Navbar() {
           {/* Left */}
           <div className="flex items-center gap-8">
             <div className="text-white font-semibold text-lg">
-              Smart Notes.AI
+              <img src="/AI_smart_Notes_logo.png" alt="Smart Notes AI Logo" className="h-8 w-8" />Smart Notes.AI
             </div>
 
             <div className="hidden sm:flex gap-4">

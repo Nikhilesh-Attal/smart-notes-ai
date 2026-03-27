@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 import { createSupabaseClient } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow, { type Message } from "../components/ChatWindow";
-import logo from "./AI_smart_Notes_Logo.png";
 import "./chat.css";
 
 export default function Chat() {
@@ -214,7 +213,7 @@ export default function Chat() {
           onClick={() => navigate("/")}
           style={{ cursor: "pointer" }}
         >
-          <img src={logo} alt="logo" className="logo-image" />
+          <img src='/AI_smart_Notes_Logo.png' alt="logo" className="logo-image" />
           <span className="logo-text">
             Smart Notes <span className="ai-brand">AI</span>
           </span>
