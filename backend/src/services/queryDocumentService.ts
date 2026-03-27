@@ -7,6 +7,7 @@ import { LocalBgeEmbeddings } from '../vector/localBgeEmbeddinds'
 import { answerFromContext } from '../ai/flan'
 import { rewriteQuestionWithHistory } from '../ai/rewriteQuestion'
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
+import { context } from 'langchain'
 
 export async function queryDocumentService(req: Request){
     let response: string;
@@ -65,6 +66,11 @@ export async function queryDocumentService(req: Request){
         // 6. answer with rewritten question
         response = await answerFromContext(standaloneQuestion, content)
         
+        // 🟢 ADD THESE TWO LINES TO DEBUG 🟢
+        console.log("\n===== RETRIEVED CONTEXT FROM DATABASE =====");
+        console.log(content ? content : "WARNING: CONTEXT IS EMPTY!");
+        console.log("===========================================\n");
+
         // 7. store the assistant's response
         await supabase.from("conversation_messages").insert({
             user_id: userId,
@@ -73,10 +79,20 @@ export async function queryDocumentService(req: Request){
             content: response,
         });
 
-        return{
+        const responseData = {
             ok: true,
-            answer: response
-        }
+            answer: response,
+            context: content
+        };
+
+        // Debug: Log what we're sending to frontend
+        console.log("\n===== SENDING RESPONSE TO FRONTEND =====");
+        console.log("Answer length:", response?.length || 0);
+        console.log("Context length:", content?.length || 0);
+        console.log("Full response:", responseData);
+        console.log("==========================================\n");
+
+        return responseData;
     }catch(err){
         console.log("Error in file backend/src/services/queryDocumentService: ",err)
         throw err

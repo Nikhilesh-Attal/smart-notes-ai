@@ -1,6 +1,7 @@
-// backend/src/ai/rewriteQuestion.ts
+import { pipeline, env } from "@xenova/transformers";
 
-import { pipeline } from "@xenova/transformers";
+//silence the TS initialization warnings
+(env as any).logLevel = 'error';
 
 let rewritePipeline: any = null;
 
@@ -16,22 +17,27 @@ async function getRewriteModel() {
 
 function buildRewritePrompt(history: any[], question: string) {
   const recent = history
-    .slice(0, 6)
+    .slice(0, 4)
     .reverse()
-    .map(m => `${m.role}: ${m.content}`)
+    .map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
     .join("\n");
 
-  return `
-You are a helpful assistant that rewrites user questions to be standalone questions based on conversation history.
-Given the following conversation history and the current question, rewrite the current question to be a complete, standalone question that doesn't depend on the conversation context.
+ // We give FLAN-T5 an exact example of what we want so it understands the pattern.
+  return `Task: Rewrite the current User question into a standalone question using the History.
 
-Conversation:
-${recent}
+    Example History:
+    User: What is Supabase?
+    Assistant: It is an open-source Firebase alternative.
+    Example User Question: How much does it cost?
+    Example Standalone Question: How much does Supabase cost?
+    
+    Conversation:
+      ${recent}
 
-Question:
-${question}
+    Question:
+      ${question}
 
-Rewritten question:
+    Rewritten question:
 `.trim();
 }
 
@@ -43,16 +49,21 @@ export async function rewriteQuestionWithHistory(
     return question;
   }
 
-  const model = await getRewriteModel();
-
-  const prompt = buildRewritePrompt(history, question);
-
-  const result = await model(prompt, {
-    max_new_tokens: 64,
-    temperature: 0,
-  });
-
-  const rewritten = result[0].generated_text.trim();
-
-  return rewritten || question;
+  try{
+    const model = await getRewriteModel();
+  
+    const prompt = buildRewritePrompt(history, question);
+  
+    const result = await model(prompt, {
+      max_new_tokens: 64,
+      temperature: 0,
+    });
+  
+    const rewritten = result[0].generated_text.trim();
+  
+    return rewritten || question;
+  }catch(error){
+    console.error("[rewriteQuestion]Error rewriting question:", error);
+    return question;
+  }
 }

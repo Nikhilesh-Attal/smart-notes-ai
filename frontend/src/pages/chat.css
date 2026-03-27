@@ -208,3 +208,8 @@
 .chat-bottom button:hover {
     background: #2ea85a;
 }
+
+.message-content {
+  white-space: pre-wrap; /* This forces HTML to obey \n line breaks */
+  word-wrap: break-word; /* Ensures long links don't break your UI */
+}

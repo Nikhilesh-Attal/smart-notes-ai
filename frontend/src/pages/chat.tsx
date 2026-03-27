@@ -150,15 +150,31 @@ export default function Chat() {
         }),
       });
 
+      // Check if response is ok
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Backend error response:", errorText);
+        throw new Error(`Backend returned ${res.status}: ${errorText}`);
+      }
+
       const data = await res.json();
+
+      // Debug: Log the full response to see what we're getting
+      console.log("Backend response:", data);
+      console.log("Data.answer:", data.answer);
+      console.log("Data.context:", data.context);
 
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            data.answer || "Sorry, I couldn't find an answer.",
+          content: data.answer || "Sorry, I couldn't find an answer.",
         },
+        // Add context as a separate message for debugging
+        ...(data.context ? [{
+          role: "assistant" as const,
+          content: `**Retrieved Context:**\n${data.context.substring(0, 1000)}${data.context.length > 1000 ? "..." : ""}`,
+        }] : []),
       ]);
     } catch (err: any) {
       console.error("Query failed:", err);

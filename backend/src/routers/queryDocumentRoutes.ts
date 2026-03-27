@@ -27,9 +27,11 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    res.json({
-      answer: result.answer,
-    });
+    res.status(200).json(result);
+    
+    // res.json({
+    //   answer: result.answer,
+    // });
 
   } catch (err) {
     console.error("Error in queryDocumentRoutes:", err);
