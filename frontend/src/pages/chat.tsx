@@ -5,9 +5,10 @@ import { createSupabaseClient } from "../api/api";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow, { type Message } from "../components/ChatWindow";
 import "./chat.css";
+import Sidebar from "../components/Sidebar";
 
 export default function Chat() {
-  const { session, signOut } = useAuth();
+  const { session} = useAuth();
   const navigate = useNavigate();
   const supabase = createSupabaseClient();
 
@@ -187,73 +188,18 @@ export default function Chat() {
     }
   };
 
-  /* ---------------- SIGN OUT ---------------- */
-
-  const handleSignOut = async (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    e.preventDefault();
-
-    try {
-      await signOut();
-      navigate("/");
-    } catch (err: any) {
-      console.error("Signout error", err);
-    }
-  };
-
   return (
     <div className="chat-page-container">
-
-      {/* HEADER */}
-
-      <header className="chat-header">
-        <div
-          className="logo-group"
-          onClick={() => navigate("/")}
-          style={{ cursor: "pointer" }}
-        >
-          <img src='/AI_smart_Notes_Logo.png' alt="logo" className="logo-image" />
-          <span className="logo-text">
-            Smart Notes <span className="ai-brand">AI</span>
-          </span>
-        </div>
-
-        <div className="header-auth">
-          <span>
-            Welcome,{" "}
-            {session?.user?.user_metadata?.full_name || "User"}
-          </span>
-
-          <button onClick={handleSignOut} className="btn-signout">
-            Sign Out
-          </button>
-        </div>
-      </header>
-
       {/* MAIN LAYOUT */}
-
       <div className="chat-layout">
 
         {/* SIDEBAR */}
-
-        <aside className="sidebar">
-          <h2>Dashboard</h2>
-
-          <button className="new-btn">+ New Note</button>
-
-          <div className="history">
-            <p>Machine Learning.pdf</p>
-            <p>Research Paper.docx</p>
-          </div>
-        </aside>
+        <Sidebar />
 
         {/* CHAT SECTION */}
-
         <main className="chat-section">
 
           {/* URL INGESTION */}
-
           {!conversationId && (
             <form
               onSubmit={handleIngest}

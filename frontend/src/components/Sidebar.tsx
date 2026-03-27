@@ -1,18 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
-const Sidebar = () => {
-  return (
-    <div className="sidebar">
-      <h2>Smart Notes AI</h2>
+export default function Sidebar(){
+  return(
+    <aside className='sidebar'>
+      <h2>Dashboard</h2>
 
-      <button>+ New Note</button>
+      <button className='new-btn'>New Note</button>
 
-      <Link to="/">Home</Link>
-      <Link to="/about">About</Link>
-      <Link to="/login">Login</Link>
-      <Link to="/signup">Signup</Link>
-    </div>
-  );
-};
+      <div className='history'>
+        {/*here map over database chats*/}
+        <p>Machine Learning.pdf</p>
+        <p>Research Pager.docx</p>
+      </div>
 
-export default Sidebar;
+      <div className="sidebar-footer" style={{marginTop: 'auto', borderTop: '1px solid black', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+         <Link to="/">Home</Link>
+         <Link to= "/about">About Us</Link>
+        </div>
+    </aside>
+  )
+}
