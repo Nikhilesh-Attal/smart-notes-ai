@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfMod = require("pdf-parse-fork");
 import { Document } from "@langchain/core/documents";
+import mammoth from "mammoth";
 
 /**
  * Main loader - Entry point for your ingestion service
@@ -21,6 +22,9 @@ export async function documentLoader(
       case "txt":
         // Pass both file and filename
         return await loadTextFile(file, filename);
+
+      case "docx":
+        return await loadDocx(file, filename);
 
       default:
         throw new Error(`Unsupported file type: ${fileExtension}`);
@@ -89,4 +93,28 @@ async function loadTextFile(fileBuffer: Buffer, filename: string): Promise<Docum
       }
     })
   ];
+}
+
+/**
+ * DOCX Loader
+ */
+async function loadDocx(fileBuffer: Buffer, filename: string): Promise<Document[]>{
+  try{
+    const result = await mammoth.extractRawText({buffer: fileBuffer});
+    const text = result.value;
+
+    if(!text.trim()) throw new Error("DOCX extraction return no text content.");
+
+    return[
+      new Document({
+        pageContent: text,
+        metadata: {
+          source: filename,
+        }
+      })
+    ];
+  }catch(error: any){
+    console.log(`[documentLoader] Error loading DOCX: ${error.message}`);
+    throw error;
+  }
 }
