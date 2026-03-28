@@ -2,6 +2,7 @@
 const pdfMod = require("pdf-parse-fork");
 import { Document } from "@langchain/core/documents";
 import mammoth from "mammoth";
+import OfficeParser from "officeparser";
 
 /**
  * Main loader - Entry point for your ingestion service
@@ -25,6 +26,9 @@ export async function documentLoader(
 
       case "docx":
         return await loadDocx(file, filename);
+
+      case "pptx":
+        return await loadPptx(file, filename);
 
       default:
         throw new Error(`Unsupported file type: ${fileExtension}`);
@@ -116,5 +120,63 @@ async function loadDocx(fileBuffer: Buffer, filename: string): Promise<Document[
   }catch(error: any){
     console.log(`[documentLoader] Error loading DOCX: ${error.message}`);
     throw error;
+  }
+}
+
+/**
+ * Helper to recursively extract text from the PPTX AST Object
+ */
+function extractTextFromAST(node: any): string {
+    if (!node) return "";
+    if (typeof node === "string") return node;
+
+    let extracted = "";
+    if (Array.isArray(node)) {
+        node.forEach(item => { extracted += extractTextFromAST(item) + " "; });
+    } else if (typeof node === "object") {
+        // If the node has a direct 'text' property, grab it and stop drilling to avoid duplicates
+        if (node.text && typeof node.text === "string") {
+            extracted += node.text + "\n";
+        } else {
+            // Otherwise, keep searching its inner properties
+            Object.values(node).forEach(val => {
+                extracted += extractTextFromAST(val) + " ";
+            });
+        }
+    }
+    return extracted.trim();
+}
+
+/**
+ * PPTX Loader
+ */
+async function loadPptx(fileBuffer: Buffer, filename: string): Promise<Document[]> {
+  try {
+    const result = await OfficeParser.parseOffice(fileBuffer, { outputErrorToConsole: true });
+    
+    // Extract clean text from the AST object or string
+    let text = "";
+    if (typeof result === "string") {
+        // If it successfully returned a plain string
+        text = result;
+    } else {
+        // If it returned the JSON AST object, parse it cleanly
+        text = extractTextFromAST(result);
+    }
+
+    console.log("\n====== PPTX CLEAN TEXT X-RAY ======");
+    console.log(text.substring(0, 500) + "... (truncated)");
+    console.log("===================================\n");
+
+    if (!text || !text.trim()) throw new Error("PPTX extraction returned no text content.");
+
+    return [
+      new Document({
+        pageContent: text,
+        metadata: { source: filename }
+      })
+    ];
+  } catch (error: any) {
+    throw new Error(`Failed to process PPTX: ${error.message}`);
   }
 }
