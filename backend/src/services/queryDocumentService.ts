@@ -7,12 +7,11 @@ import { LocalBgeEmbeddings } from '../vector/localBgeEmbeddinds'
 import { answerFromContext } from '../ai/flan'
 import { rewriteQuestionWithHistory } from '../ai/rewriteQuestion'
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
-import { context } from 'langchain'
 
 export async function queryDocumentService(req: Request){
     let response: string;
     try{
-        const { query, conversationId, documentId} = req.body
+        const { query, conversationId, documentIds} = req.body
 
         //Extract and verify the token from react
         const authHeader = req.headers.authorization;
@@ -51,7 +50,7 @@ export async function queryDocumentService(req: Request){
             tableName: "documents_embedding",
             queryName: "match_documents",
             filter: {
-                document_ids: [documentId]
+                document_ids: documentIds
             }
         })
 
@@ -59,14 +58,14 @@ export async function queryDocumentService(req: Request){
         const standaloneQuestion = await rewriteQuestionWithHistory(previousMessages || [], query)
 
         // 5. retrieve with rewritten question
-        const results = await vectorStore.similaritySearch(standaloneQuestion, 5)
+        const results = await vectorStore.similaritySearch(standaloneQuestion, 5);
 
         const content = results.map(d => d.pageContent).join("\n")
 
         // 6. answer with rewritten question
         response = await answerFromContext(standaloneQuestion, content)
         
-        // 🟢 ADD THESE TWO LINES TO DEBUG 🟢
+        // ADD THESE TWO LINES TO DEBUG 
         console.log("\n===== RETRIEVED CONTEXT FROM DATABASE =====");
         console.log(content ? content : "WARNING: CONTEXT IS EMPTY!");
         console.log("===========================================\n");

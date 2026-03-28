@@ -8,6 +8,7 @@ export default function Sidebar({
   setConversationId,
   setDocumentIds,
   setMessages,
+  onNewChat,
 }: any) {
   const supabase = createSupabaseClient();
 
@@ -52,12 +53,6 @@ export default function Sidebar({
     setMessages(data || []);
   };
 
-  const handleNewChat = () => {
-    setConversationId(null);
-    setDocumentIds([]);
-    setMessages([]);
-  };
-
   const handleRename = async (convId: string) => {
     const newTitle = prompt("Enter new chat name:");
     if (!newTitle) return;
@@ -95,7 +90,7 @@ export default function Sidebar({
     <aside className="sidebar">
       <h2>Dashboard</h2>
 
-      <button className="new-btn" onClick={handleNewChat}>
+      <button className="new-btn" onClick={onNewChat}>
         New Note
       </button>
 

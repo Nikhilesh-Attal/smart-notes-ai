@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { createSupabaseClient } from "../api/api";
 import { useAuth } from "../context/AuthContext";
@@ -19,6 +19,26 @@ export default function Chat() {
   // UI State
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+
+  //save to storage, whenever these states change, back them up
+  useEffect(() => {
+    if(conversationId){
+      const sessionData = { conversationId, documentIds, documentName, messages};
+      sessionStorage.setItem("activeChatSession", JSON.stringify(sessionData));
+    }
+  }, [conversationId, documentIds, documentName, messages]);
+
+  //load from storage, when the component mounts (or page refreshes), restore them
+  useEffect(() => {
+    const savedSession = sessionStorage.getItem("activeChatSession");
+    if(savedSession){
+      const parsed = JSON.parse(savedSession);
+      setConversationId(parsed.conversationId);
+      setDocumentIds(parsed.documentIds);
+      if(parsed.documentName) setDocumentName(parsed.documentName);
+      setMessages(parsed.messages);
+    }
+  }, []);
 
   /* ---------------- INGEST URL ---------------- */
 
@@ -88,11 +108,17 @@ export default function Chat() {
     try {
       setIsTyping(true);
 
-      const convId = uuidv4();
+      const convId = conversationId ||uuidv4();
       const docId = uuidv4();
       const userId = session?.user?.id;
 
-      await supabase.from("conversations").insert({ id: convId, user_id: userId });
+      //only insert a new conversation if we don't already have one active
+      if(!conversationId){
+        await supabase.from("conversations").insert({ id: convId, user_id: userId });
+        setConversationId(convId);
+      }
+
+      //always insert the new document and link it
       await supabase.from("documents").insert({ id: docId, user_id: userId });
 
       await supabase.from("conversation_documents").insert({
@@ -116,9 +142,9 @@ export default function Chat() {
       const data = await res.json();
       if (!data.ok) throw new Error(data.error);
 
-      setConversationId(convId);
-      setDocumentIds([docId]);
-      setDocumentName(file.name);
+      //Append the new document ID to the array, don't overwrite it!
+      setDocumentIds((prev) => [...prev, docId]);
+      setDocumentName((prev) => prev ? `${prev} + ${file.name}` : file.name);
 
       setMessages([
         {
@@ -166,7 +192,7 @@ export default function Chat() {
         body: JSON.stringify({
           query: text,
           conversationId,
-          documentId: documentIds[0],
+          documentIds: documentIds,
         }),
       });
 
@@ -210,6 +236,14 @@ export default function Chat() {
     }
   };
 
+  const handleNewChat = () => {
+    sessionStorage.removeItem("activeChatSession");
+    setConversationId(null);
+    setDocumentIds([]);
+    setDocumentName("");
+    setMessages([]);
+  };
+
   return (
     <div className="chat-page-container">
       {/* MAIN LAYOUT */}
@@ -220,6 +254,7 @@ export default function Chat() {
           setConversationId={setConversationId}
           setDocumentIds={setDocumentIds}
           setMessages={setMessages}
+          onNewChat={handleNewChat}
         />
 
         {/* CHAT SECTION */}
