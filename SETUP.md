@@ -183,6 +183,10 @@ ADD COLUMN user_id uuid GENERATED ALWAYS AS (((metadata ->> 'userId'::text))::uu
 -- 3. Put the exact same RLS policy back
 CREATE POLICY "Users can manage their own embeddings" ON public.documents_embedding FOR ALL USING (auth.uid() = user_id);
 
+ALTER TABLE conversations ADD COLUMN title text;
+
+DELETE FROM conversations
+WHERE created_at < now() - interval '30 days';
 ```
 
 ## Running the Application

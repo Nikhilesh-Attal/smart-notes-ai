@@ -213,3 +213,14 @@
   white-space: pre-wrap; /* This forces HTML to obey \n line breaks */
   word-wrap: break-word; /* Ensures long links don't break your UI */
 }
+
+/* Update this block in your chat.css */
+.message {
+    max-width: 70%;
+    padding: 14px 18px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap; /* Forces HTML to obey \n line breaks */
+    word-wrap: break-word; /* Prevents long URLs from breaking the container */
+}

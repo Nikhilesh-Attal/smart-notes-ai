@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { createSupabaseClient } from "../api/api";
 import { useAuth } from "../context/AuthContext";
@@ -9,13 +8,13 @@ import Sidebar from "../components/Sidebar";
 
 export default function Chat() {
   const { session} = useAuth();
-  const navigate = useNavigate();
   const supabase = createSupabaseClient();
 
   // Backend State
   const [url, setUrl] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [documentIds, setDocumentIds] = useState<string[]>([]);
+  const [documentName, setDocumentName] = useState<string>("");
 
   // UI State
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,8 +33,15 @@ export default function Chat() {
       const docId = uuidv4();
       const userId = session?.user?.id;
 
-      await supabase.from("conversations").insert({ id: convId, user_id: userId });
-      await supabase.from("documents").insert({ id: docId, user_id: userId });
+      await supabase.from("conversations").insert({ 
+        id: convId, 
+        user_id: userId 
+      });
+      
+      await supabase.from("documents").insert({ 
+        id: docId, 
+        user_id: userId 
+      });
 
       await supabase.from("conversation_documents").insert({
         conversation_id: convId,
@@ -57,6 +63,7 @@ export default function Chat() {
 
       setConversationId(convId);
       setDocumentIds([docId]);
+      setDocumentName(url.includes("youtube") ? "YouTube Video" : "Web Source");
 
       setMessages([
         {
@@ -111,6 +118,7 @@ export default function Chat() {
 
       setConversationId(convId);
       setDocumentIds([docId]);
+      setDocumentName(file.name);
 
       setMessages([
         {
@@ -135,8 +143,20 @@ export default function Chat() {
 
     setMessages((prev) => [...prev, userMsg]);
     setIsTyping(true);
-
+    
     try {
+      const isFirstUserMessage = !messages.some(msg => msg.role === "user");
+
+      if(isFirstUserMessage){
+          //grab first 4 words of the user's message to use as conversation title
+          const msgSnippet = text.split(" ").slice(0,4).join(" ");
+
+          //combine document name and the user's message to create a more descriptive title
+          const title = `${documentName} - ${msgSnippet}`
+
+          await supabase.from("conversations").update({title}).eq("id", conversationId);
+        }
+
       const res = await fetch("http://localhost:5000/query-document", {
         method: "POST",
         headers: { 
@@ -173,6 +193,8 @@ export default function Chat() {
         // Add context as a separate message for debugging
         ...(data.context ? [{
           role: "assistant" as const,
+          //answer: `**Retrieved answer:**\n${data.answer}`,
+          //content: `**Retrieved Context:**\n${data.context}`
           content: `**Retrieved Context:**\n${data.context.substring(0, 1000)}${data.context.length > 1000 ? "..." : ""}`,
         }] : []),
       ]);
@@ -194,24 +216,20 @@ export default function Chat() {
       <div className="chat-layout">
 
         {/* SIDEBAR */}
-        <Sidebar />
+        <Sidebar 
+          setConversationId={setConversationId}
+          setDocumentIds={setDocumentIds}
+          setMessages={setMessages}
+        />
 
         {/* CHAT SECTION */}
         <main className="chat-section">
 
           {/* URL INGESTION */}
           {!conversationId && (
-            <form
-              onSubmit={handleIngest}
-              className="ingest-form"
-            >
+            <form onSubmit={handleIngest} className="ingest-form">
               <input
-                type="text"
-                placeholder="Paste YouTube URL..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                autoComplete="off"
-              />
+                type="text" placeholder="Paste YouTube URL..." value={url} onChange={(e) => setUrl(e.target.value)} autoComplete="off" />
 
               <button type="submit" disabled={isTyping}>
                 Process URL
@@ -223,12 +241,7 @@ export default function Chat() {
 
           <div className="chat-container">
             <ChatWindow
-              messages={messages}
-              isTyping={isTyping}
-              onSendMessage={handleSendMessage}
-              onFileSelect={handleFileUpload}
-              hasConversation={!!conversationId}
-            />
+              messages={messages} isTyping={isTyping} onSendMessage={handleSendMessage} onFileSelect={handleFileUpload} hasConversation={!!conversationId}/>
           </div>
         </main>
 
