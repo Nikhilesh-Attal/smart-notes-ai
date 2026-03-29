@@ -6,6 +6,7 @@ const pdfMod = require("pdf-parse-fork");
 import { Document } from "@langchain/core/documents";
 import mammoth from "mammoth";
 import OfficeParser from "officeparser";
+import { format } from "path";
 import Tesseract from "tesseract.js";
 
 /* Main loader - Entry point for your ingestion service */
@@ -115,6 +116,7 @@ async function loadDocx(fileBuffer: Buffer, filename: string): Promise<Document[
         pageContent: text,
         metadata: {
           source: filename,
+          format: "docx",
         }
       })
     ];
@@ -127,23 +129,29 @@ async function loadDocx(fileBuffer: Buffer, filename: string): Promise<Document[
 /* Helper to recursively extract text from the PPTX AST Object */
 function extractTextFromAST(node: any): string {
     if (!node) return "";
-    if (typeof node === "string") return node;
+    if (typeof node === "string") return node.trim();
 
     let extracted = "";
     if (Array.isArray(node)) {
-        node.forEach(item => { extracted += extractTextFromAST(item) + " "; });
+        node.forEach(item => { 
+          const childText = extractTextFromAST(item);
+          if(childText) extracted += childText + "\n\n"; 
+        });
     } else if (typeof node === "object") {
         // If the node has a direct 'text' property, grab it and stop drilling to avoid duplicates
         if (node.text && typeof node.text === "string") {
-            extracted += node.text + "\n";
+            extracted += node.text.trim() + "\n";
         } else {
             // Otherwise, keep searching its inner properties
             Object.values(node).forEach(val => {
-                extracted += extractTextFromAST(val) + " ";
+              const childText = extractTextFromAST(val);
+              if(childText) extracted += childText + "\n\n";  
             });
         }
     }
-    return extracted.trim();
+
+    //clear up exessive newlines created by the recursion
+    return extracted.replace(/\n{3,}/g, "\n\n").trim();
 }
 
 /* PPTX Loader */
@@ -188,11 +196,14 @@ async function loadImage(fileBuffer: Buffer, filename: string): Promise<Document
 
     if(!text || !text.trim()) throw new Error("OCR found no readable text in the image.");
 
+    //wrap the text so Flan-t5 knows this is fragment OCR data
+    const contextualText = `[begin scanned image/ocr text]\n${text}\n[end scanned image/ocr text]`
     return[
       new Document({
-        pageContent: text, 
+        pageContent: contextualText, 
         metadata: {
-          source: filename
+          source: filename,
+          format: "image",
         }
       })
     ];

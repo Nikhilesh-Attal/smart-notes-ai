@@ -120,20 +120,37 @@ frontend/
 
 Backend
 backend/
-  ai/
-    flan.ts
   src/
+    ai/
+      flan.ts
+      rewriteQuestion.ts
+    config/
+      splitter.ts <--here we defin size of chunk in which document will be split
+    helper\
+      supabaseClientHelpers.ts  <--here we call the supabase keys and connect supabase with project
     loaders/
       youtubeLoader.ts
       documentLoader.ts <--this file contains code of parser
+    routers\
+      queryDocumentRoutes.ts
+      storeDocumentRoutes.ts
+      uploadDocuemtRoutes.ts  <--here we defin size of document, authorize person upload document
     services/
-      ingestionService.ts
+      ingestionService.ts <--this is main file. this handle every things and send data finally in suabase
       queryDocumentService.ts
+      storeDocumentService.ts
+      uploadDocumentService.ts
     vector/
+      localBgeEmbeddings.ts
       supabaseVectorStore.ts
     utils/
+      chunkText.ts
       localEmbeddings.ts
       youtubeTranscript.ts
+    app.ts
+    server.ts
+    mammoth.d.ts
+    parsers.d.ts
   embed.py
   transcribe.py
   yt-dlp.exe

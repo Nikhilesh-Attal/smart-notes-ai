@@ -12,6 +12,7 @@ import { splitter } from "../config/splitter";
 import { createSupabaseClient } from "../helpers/supabseClientHelpers";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
 import { LocalBgeEmbeddings } from "../vector/localBgeEmbeddinds";
+import fs from "fs";
 
 // Multer file type
 interface MulterFile {
@@ -23,7 +24,6 @@ interface MulterFile {
   destination: string;
   filename: string;
   path: string;
-  buffer: Buffer;
 }
 
 export async function ingestYoutube(url: string, documentId: string, token: string) {
@@ -91,9 +91,11 @@ export async function ingestDocument(file: MulterFile, documentId: string, token
     if(authError || !user) throw new Error("[ingestionService] unauthorized: invalid token");
     const userId = user.id;
 
+    //read the file buffer from the disk instead of relying on Multer's memory
+    const fileBuffer = fs.readFileSync(file.path);
 
     // 1. Load and parse document
-    const docs = await documentLoader(file.buffer, file.originalname);
+    const docs = await documentLoader(fileBuffer, file.originalname);
     console.log(
       `[ingestionService] Successfully loaded ${docs.length} document(s) from ${file.originalname}`
     );
