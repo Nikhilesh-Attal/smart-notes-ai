@@ -69,17 +69,40 @@ export default function Sidebar({
   };
 
   const handleDelete = async (convId: string) => {
-    const confirmDelete = confirm("Delete this chat?");
-    if (!confirmDelete) return;
+    const confirmDelete = confirm("Delete this chat and its documents?");
+    if (!confirmDelete) {
+      setActiveMenu(null);
+      return;
+    }
 
-    const { error } = await supabase
-      .from("conversations")
-      .delete()
-      .eq("id", convId);
+    //optimizationally remove the chat from the sidebar immediately so it feels faster
+    setConversations((prev) =>
+      prev.filter((c) => c.id !== convId)
+    );
 
-    if (error) console.error(error);
+    try {
+      //get the current user's session token
+      const { data : {session}} = await supabase.auth.getSession();
+      const token = session?.access_token;
 
-    fetchHistory();
+      if(!token) throw new Error("Unauthorized person try to delete chat");
+
+      //call your express backend for Delete route
+      const reponse = await fetch(`http://localhost:5000/delete/conversation/${convId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!reponse.ok) {
+        throw new Error("Failed to delete chat");
+      }
+    } catch (error) {
+      console.error(error);
+      fetchHistory();
+    }
   };
 
   const toggleMenu = (id: string) => {
@@ -125,7 +148,7 @@ export default function Sidebar({
                     position: "absolute",
                     right: 0,
                     top: "25px",
-                    background: "white",
+                    background: "blue",
                     border: "1px solid #ddd",
                     borderRadius: "5px",
                     padding: "5px",

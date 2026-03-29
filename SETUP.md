@@ -40,12 +40,26 @@ Make sure you have the following tables in your Supabase database:
 
 ```sql
 -- ==========================================
--- 0. ENABLE EXTENSIONS
+-- 0. TEARDOWN: DROP EXISTING TABLES & FUNCTIONS
 -- ==========================================
-CREATE EXTENSION IF NOT EXISTS vector;
+-- CASCADE ensures that any dependent constraints or views are also destroyed safely.
+-- Note: This only drops your custom public tables. It does NOT touch auth.users.
+
+DROP FUNCTION IF EXISTS public.match_documents(vector, int, jsonb);
+DROP TABLE IF EXISTS public.documents_embedding CASCADE;
+DROP TABLE IF EXISTS public.conversation_messages CASCADE;
+DROP TABLE IF EXISTS public.conversation_documents CASCADE;
+DROP TABLE IF EXISTS public.conversations CASCADE;
+DROP TABLE IF EXISTS public.documents CASCADE;
 
 -- ==========================================
--- 1. CREATE TABLES (With user_id for isolation)
+-- 1. ENABLE EXTENSIONS
+-- ==========================================
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- ==========================================
+-- 2. CREATE TABLES (Clean, Unified Build)
 -- ==========================================
 
 -- Documents table
@@ -56,10 +70,11 @@ CREATE TABLE public.documents (
   constraint documents_pkey primary key (id)
 );
 
--- Conversations table  
+-- Conversations table (Now includes the 'title' column from the start)
 CREATE TABLE public.conversations (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
+  title text null,
   user_id uuid not null references auth.users(id) on delete cascade,
   constraint conversations_pkey primary key (id)
 );
@@ -86,20 +101,22 @@ CREATE TABLE public.conversation_messages (
   constraint conversation_messages_conversation_id_fkey foreign key (conversation_id) references conversations (id) on delete cascade
 );
 
--- Documents embedding table (for vector search)
+-- Documents embedding table (Vectors)
+-- Includes the generated user_id and the critical document_id foreign key cascade!
 CREATE TABLE public.documents_embedding (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   content text null,
   metadata jsonb null,
-  document_id uuid GENERATED ALWAYS as (((metadata ->> 'documentId'::text))::uuid) STORED null,
+  document_id uuid GENERATED ALWAYS AS (((metadata ->> 'documentId'::text))::uuid) STORED,
+  user_id uuid GENERATED ALWAYS AS (((metadata ->> 'userId'::text))::uuid) STORED NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   embedding vector(384) null,
-  user_id uuid not null references auth.users(id) on delete cascade,
-  constraint documents_embedding_pkey primary key (id)
+  constraint documents_embedding_pkey primary key (id),
+  constraint documents_embedding_document_id_fkey foreign key (document_id) references public.documents(id) on delete cascade
 );
 
 -- ==========================================
--- 2. ENABLE ROW LEVEL SECURITY (RLS)
+-- 3. ENABLE ROW LEVEL SECURITY (RLS)
 -- ==========================================
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
@@ -108,10 +125,8 @@ ALTER TABLE public.conversation_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents_embedding ENABLE ROW LEVEL SECURITY;
 
 -- ==========================================
--- 3. CREATE SECURITY POLICIES
+-- 4. CREATE SECURITY POLICIES
 -- ==========================================
--- These ensure users can only interact with rows that match their auth token
-
 CREATE POLICY "Users can manage their own documents" ON public.documents FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage their own conversations" ON public.conversations FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Users can manage their own conversation_documents" ON public.conversation_documents FOR ALL USING (auth.uid() = user_id);
@@ -119,10 +134,8 @@ CREATE POLICY "Users can manage their own messages" ON public.conversation_messa
 CREATE POLICY "Users can manage their own embeddings" ON public.documents_embedding FOR ALL USING (auth.uid() = user_id);
 
 -- ==========================================
--- 4. SECURE THE VECTOR SEARCH FUNCTION
+-- 5. SECURE THE VECTOR SEARCH FUNCTION
 -- ==========================================
--- SECURITY INVOKER forces the function to respect the RLS policies above
-
 CREATE OR REPLACE FUNCTION match_documents(
     query_embedding vector(384),
     match_count int DEFAULT 5,
@@ -172,21 +185,26 @@ BEGIN
 END;
 $$;
 
--- 1. Temporarily remove the RLS policy
-DROP POLICY IF EXISTS "Users can manage their own embeddings" ON public.documents_embedding;
+-- ==========================================
+-- 6. AUTOMATED 30-DAY DATA LIFECYCLE (PG_CRON)
+-- ==========================================
+-- Unschedules the job if it already exists, then creates a fresh schedule
+SELECT cron.unschedule('cleanup-30-day-data');
 
--- 2. Drop and recreate the user_id column as a generated column
-ALTER TABLE public.documents_embedding DROP COLUMN user_id;
-ALTER TABLE public.documents_embedding 
-ADD COLUMN user_id uuid GENERATED ALWAYS AS (((metadata ->> 'userId'::text))::uuid) STORED NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE;
+SELECT cron.schedule(
+  'cleanup-30-day-data', 
+  '0 0 * * *', 
+  $$
+    -- Because of ON DELETE CASCADE, deleting these parents automatically deletes
+    -- the associated vectors, messages, and linking tables.
+    DELETE FROM public.documents WHERE created_at < NOW() - INTERVAL '30 days';
+    DELETE FROM public.conversations WHERE created_at < NOW() - INTERVAL '30 days';
+  $$
+);
 
--- 3. Put the exact same RLS policy back
-CREATE POLICY "Users can manage their own embeddings" ON public.documents_embedding FOR ALL USING (auth.uid() = user_id);
-
-ALTER TABLE conversations ADD COLUMN title text;
-
-DELETE FROM conversations
-WHERE created_at < now() - interval '30 days';
+ALTER TABLE public.documents_embedding
+ADD CONSTRAINT documents_embedding_document_id_fkey
+FOREIGN KEY (document_id) REFERENCES public.documents(id) ON DELETE CASCADE;
 ```
 
 ## Running the Application

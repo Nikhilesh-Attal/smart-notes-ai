@@ -7,6 +7,7 @@ dotenv.config();
 import storeDocumentRouter from "./routers/storeDocumentRoutes";
 import queryDocumentRouter from "./routers/queryDocumentRoutes";
 import uploadDocumentRouter from "./routers/uploadDocumentRoutes";
+import deleteRouter from "./routers/deleteRoutes";
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.options(/.*/, cors(corsOptions));
 app.use('/store-document', storeDocumentRouter);
 app.use('/query-document', queryDocumentRouter);
 app.use('/upload-document', uploadDocumentRouter);
+app.use('/delete', deleteRouter);
 
 console.log("App.tsx file running");
 
