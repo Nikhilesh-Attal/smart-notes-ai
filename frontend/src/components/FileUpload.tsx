@@ -23,7 +23,7 @@ const FileUpload = ({ onFileSelect, disabled }: FileUploadProps) => {
         type="file"
         id="file-upload-input"
         name="file-upload"
-        accept=".pdf, .txt, .docx, .pptx"
+        accept=".pdf, .txt, .docx, .pptx, .png, .jpg, .jpeg,"
         onChange={handleFileChange}
         disabled={disabled}
       />

@@ -125,6 +125,7 @@ backend/
   src/
     loaders/
       youtubeLoader.ts
+      documentLoader.ts <--this file contains code of parser
     services/
       ingestionService.ts
       queryDocumentService.ts
