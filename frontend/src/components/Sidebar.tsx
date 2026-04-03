@@ -75,19 +75,16 @@ export default function Sidebar({
       return;
     }
 
-    //optimizationally remove the chat from the sidebar immediately so it feels faster
     setConversations((prev) =>
       prev.filter((c) => c.id !== convId)
     );
 
     try {
-      //get the current user's session token
-      const { data : {session}} = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      if(!token) throw new Error("Unauthorized person try to delete chat");
+      if (!token) throw new Error("Unauthorized person try to delete chat");
 
-      //call your express backend for Delete route
       const reponse = await fetch(`http://localhost:5000/delete/conversation/${convId}`, {
         method: "DELETE",
         headers: {
@@ -110,60 +107,49 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="sidebar">
-      <h2>Dashboard</h2>
+    <aside className="w-64 bg-brand-darker flex flex-col border-r border-brand-border p-6">
+      <h2 className="text-xs uppercase tracking-widest text-brand-subtle mb-5 font-semibold">Dashboard</h2>
 
-      <button className="new-btn" onClick={onNewChat}>
-        New Note
+      <button
+        className="w-full py-3 bg-brand-green hover:bg-brand-green-hover text-brand-dark font-bold rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-brand-green/20 mb-6 cursor-pointer"
+        onClick={onNewChat}
+      >
+        + New Note
       </button>
 
-      <div className="history">
+      <div className="flex-1 overflow-y-auto space-y-1">
         {conversations.map((conv) => (
           <div
             key={conv.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "10px",
-              position: "relative",
-            }}
+            className="group flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-brand-glass-hover transition-all duration-200 relative"
           >
             <div
               onClick={() => handleSelect(conv)}
-              style={{ cursor: "pointer" }}
+              className="flex-1 text-sm text-brand-muted hover:text-brand-green-light cursor-pointer truncate mr-2 transition-colors duration-200"
             >
               {conv.title || "New Chat"}
             </div>
 
             {/* Three dot menu */}
-            <div style={{ cursor: "pointer" }}>
-              <span onClick={() => toggleMenu(conv.id)}>
+            <div className="relative">
+              <span
+                onClick={() => toggleMenu(conv.id)}
+                className="text-brand-subtle hover:text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1"
+              >
                 <FontAwesomeIcon icon={faEllipsisVertical} />
               </span>
 
               {activeMenu === conv.id && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: "25px",
-                    background: "blue",
-                    border: "1px solid #ddd",
-                    borderRadius: "5px",
-                    padding: "5px",
-                    zIndex: 10,
-                  }}
-                >
+                <div className="absolute right-0 top-7 bg-brand-card border border-brand-border-light rounded-lg shadow-xl z-20 overflow-hidden min-w-[120px]">
                   <div
                     onClick={() => handleRename(conv.id)}
-                    style={{ padding: "5px", cursor: "pointer" }}
+                    className="px-4 py-2.5 text-sm text-brand-muted hover:text-white hover:bg-brand-glass-hover cursor-pointer transition-all duration-200"
                   >
                     Rename
                   </div>
                   <div
                     onClick={() => handleDelete(conv.id)}
-                    style={{ padding: "5px", cursor: "pointer" }}
+                    className="px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-brand-glass-hover cursor-pointer transition-all duration-200"
                   >
                     Delete
                   </div>
@@ -172,21 +158,6 @@ export default function Sidebar({
             </div>
           </div>
         ))}
-      </div>
-
-      <div
-        className="sidebar-footer"
-        style={{
-          marginTop: "auto",
-          borderTop: "1px solid black",
-          paddingTop: "15px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
-        <Link to="/">Home</Link>
-        <Link to="/about">About Us</Link>
       </div>
     </aside>
   );

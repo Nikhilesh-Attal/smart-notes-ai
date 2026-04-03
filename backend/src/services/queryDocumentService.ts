@@ -55,7 +55,12 @@ export async function queryDocumentService(req: Request){
         })
 
         // rewrite question using history
-        const standaloneQuestion = await rewriteQuestionWithHistory(previousMessages || [], query)
+        
+        const standaloneQuestion = query;
+        //const standaloneQuestion = await rewriteQuestionWithHistory(previousMessages || [], query)
+
+        console.log("Original Query:", query);
+        console.log("Rewritten Standalone Query:", standaloneQuestion);
 
         // 5. retrieve with rewritten question
         const results = await vectorStore.similaritySearch(standaloneQuestion, 5);

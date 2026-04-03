@@ -17,25 +17,17 @@ async function getRewriteModel() {
 
 function buildRewritePrompt(history: any[], question: string) {
   const recent = history
-    .slice(0, 4)
+    .slice(0, 2)
     .reverse()
     .map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
     .join("\n");
 
  // We give FLAN-T5 an exact example of what we want so it understands the pattern.
-  return `Task: Rewrite the current User question into a standalone question using the History.
+  return `Rewrite the final question to make it clear and standalone using context from the history. Do not answer the question.
 
-    Example History:
-    User: What is Supabase?
-    Assistant: It is an open-source Firebase alternative.
-    Example User Question: How much does it cost?
-    Example Standalone Question: How much does Supabase cost?
-    
-    Conversation:
-      ${recent}
+    History: ${recent}
 
-    Question:
-      ${question}
+    Question: ${question}
 
     Rewritten question:
 `.trim();
@@ -45,7 +37,7 @@ export async function rewriteQuestionWithHistory(
   history: any[],
   question: string
 ): Promise<string> {
-  if (!history || history.length === 0) {
+  if (!history || history.length <= 1) {
     return question;
   }
 
@@ -56,12 +48,19 @@ export async function rewriteQuestionWithHistory(
   
     const result = await model(prompt, {
       max_new_tokens: 64,
-      temperature: 0,
+      temperature: 0.1,
     });
   
     const rewritten = result[0].generated_text.trim();
   
-    return rewritten || question;
+    // FAIL-SAFE: If the model hallucinates and outputs something totally unrelated,
+    // or spits out instructions, fallback to the original question.
+    if (!rewritten || rewritten.length < 3 || rewritten.includes("Rewrite the final question")) {
+        console.warn("[rewriteQuestion] Model hallucinated. Falling back to original query.");
+        return question;
+    }
+
+    return rewritten;
   }catch(error){
     console.error("[rewriteQuestion]Error rewriting question:", error);
     return question;

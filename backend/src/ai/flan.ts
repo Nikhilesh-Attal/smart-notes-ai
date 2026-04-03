@@ -25,7 +25,7 @@ async function getQAModel() {
 /**
  * Ensures the context doesn't exceed the model's token capacity
  */
-function truncateContext(context: string, maxChars = 4000) {
+function truncateContext(context: string, maxChars = 2000) {
   if (context.length <= maxChars) return context;
   return context.slice(0, maxChars) + "... [truncated]";
 }
@@ -38,7 +38,7 @@ export async function answerFromContext(question: string, context: string) {
     const model = await getQAModel();
     
     // Clean and truncate context
-    const cleanContext = truncateContext(context);
+    const cleanContext = truncateContext(context, 2000);
     
     //dynaminc word count detection
     const wordMatch = question.match(/(\d+)\s*words?/i);
@@ -54,18 +54,11 @@ export async function answerFromContext(question: string, context: string) {
     }
     
     // Improved prompt for better academic content handling
-    const prompt = `You are an expert academic assistant. Read the provided document context carefully and answer the user's question accurately.
-
-IMPORTANT INSTRUCTIONS:
-- Use ONLY the information from the provided Context
-- If the answer is not found in the context, respond exactly: "I cannot answer this based on the uploaded document."
-- Provide complete, detailed answers based on the context
-- For technical topics, include specific details mentioned in the context${wordConstraint}
-
-Context:
-${cleanContext}
-
-Question: ${question}
+    const prompt = `Answer the question based ONLY on the following context. If you cannot find the answer, say "I cannot answer this."${wordConstraint}
+    
+    Question: ${question}
+    
+    Context: ${cleanContext}
 
 Answer:`;
 

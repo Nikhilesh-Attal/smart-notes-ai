@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom"; // Added Navigate
+import { useAuth } from "./context/AuthContext"; // Import useAuth to get session
 import Home from "./pages/Home";
 import Chat from "./pages/chat";
 import Login from "./pages/Login";
@@ -6,24 +7,91 @@ import Signup from "./pages/Signup";
 import About from "./pages/About";
 import ContactUs from "./pages/ContactUs";
 import ProtectedRoute from "./components/PrivateRoute";
+import Footer from "./components/Footer";
+import Profile from "./pages/Profile";
 
 function App() {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signin" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<ContactUs />} />
+  const location = useLocation();
+  const { session, loading } = useAuth(); // Get auth state
 
-      {/* Protected Routes - Only logged-in users can visit these */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/chat" element={<Chat />} />
-        {/* Add any other private routes here, like /profile or /settings */}
-      </Route>
-    </Routes>
+  // Hide footer on chat page
+  const hideFooter = location.pathname.startsWith("/chat");
+
+  // Prevent flicker by showing a loader while checking auth
+  if (loading) {
+    return <div className="min-h-screen bg-brand-dark flex items-center justify-center text-white">Loading...</div>;
+  }
+
+  return (
+    <>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signin" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<ContactUs />} />
+
+        {/* Protected Routes - Moving Profile inside here handles the session check for you */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Catch-all: Redirect unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+
+      {!hideFooter && <Footer />}
+    </>
   );
 }
 
 export default App;
+
+
+
+
+
+
+// import { Routes, Route, useLocation } from "react-router-dom";
+// import Home from "./pages/Home";
+// import Chat from "./pages/chat";
+// import Login from "./pages/Login";
+// import Signup from "./pages/Signup";
+// import About from "./pages/About";
+// import ContactUs from "./pages/ContactUs";
+// import ProtectedRoute from "./components/PrivateRoute";
+// import Footer from "./components/Footer";
+// import Profile from "./pages/Profile";
+
+// function App() {
+//   const location = useLocation();
+
+//   // Hide footer on chat page
+//   const hideFooter = location.pathname.startsWith("/chat");
+
+//   return (
+//     <>
+//       <Routes>
+//         <Route path="/" element={<Home />} />
+//         <Route path="/login" element={<Login />} />
+//         <Route path="/signin" element={<Login />} />
+//         <Route path="/signup" element={<Signup />} />
+//         <Route path="/about" element={<About />} />
+//         <Route path="/contact" element={<ContactUs />} />
+//         <Route path="/profile" element={session ? <Profile /> : <Navigate to="/login" />} />
+
+//         {/* Protected Routes */}
+//         <Route element={<ProtectedRoute />}>
+//           <Route path="/chat" element={<Chat />} />
+//         </Route>
+//       </Routes>
+
+//       {!hideFooter && <Footer />}
+//     </>
+//   );
+// }
+
+// export default App;

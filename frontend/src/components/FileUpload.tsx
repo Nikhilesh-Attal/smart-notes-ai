@@ -7,28 +7,35 @@ interface FileUploadProps {
 
 const FileUpload = ({ onFileSelect, disabled }: FileUploadProps) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Grab the first file the user selected
     const file = e.target.files?.[0];
-    
+
     if (file) {
       onFileSelect(file);
-      // Reset the input value so the user can upload the same file again if needed
       e.target.value = "";
     }
   };
 
   return (
-    <div className="file-upload-container" style={{ padding: "10px 20px" }}>
+  <div className="px-1 flex items-center">
+    <label
+      htmlFor="file-upload-input"
+      className="flex items-center gap-2 px-3 py-2 bg-brand-surface hover:bg-brand-card text-brand-muted hover:text-white rounded-full text-sm font-medium transition-all duration-200 border border-brand-border-light cursor-pointer whitespace-nowrap"
+    >
+      <span>📎</span>
+      <span>File</span>
+
       <input
         type="file"
         id="file-upload-input"
         name="file-upload"
-        accept=".pdf, .txt, .docx, .pptx, .png, .jpg, .jpeg,"
+        accept=".pdf,.txt,.docx,.pptx,.png,.jpg,.jpeg"
         onChange={handleFileChange}
         disabled={disabled}
+        className="hidden"
       />
-    </div>
-  );
+    </label>
+  </div>
+);
 };
 
 export default FileUpload;
