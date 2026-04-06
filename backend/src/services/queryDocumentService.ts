@@ -4,8 +4,7 @@
 import { Request } from 'express'
 import { createSupabaseClient } from '../helpers/supabseClientHelpers'
 import { LocalBgeEmbeddings } from '../vector/localBgeEmbeddinds'
-import { answerFromContext } from '../ai/flan'
-import { rewriteQuestionWithHistory } from '../ai/rewriteQuestion'
+import { answerWithLlama } from '../ai/llamaService'
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 
 export async function queryDocumentService(req: Request){
@@ -68,7 +67,7 @@ export async function queryDocumentService(req: Request){
         const content = results.map(d => d.pageContent).join("\n")
 
         // 6. answer with rewritten question
-        response = await answerFromContext(standaloneQuestion, content)
+        response = await answerWithLlama(standaloneQuestion, content)
         
         // ADD THESE TWO LINES TO DEBUG 
         console.log("\n===== RETRIEVED CONTEXT FROM DATABASE =====");
