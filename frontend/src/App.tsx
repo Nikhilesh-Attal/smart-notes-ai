@@ -12,13 +12,13 @@ import Profile from "./pages/Profile";
 
 function App() {
   const location = useLocation();
-  const { session, loading } = useAuth(); // Get auth state
+  const { user } = useAuth(); // Get auth state
 
   // Hide footer on chat page
   const hideFooter = location.pathname.startsWith("/chat");
 
   // Prevent flicker by showing a loader while checking auth
-  if (loading) {
+  if (user) {
     return <div className="min-h-screen bg-brand-dark flex items-center justify-center text-white">Loading...</div>;
   }
 

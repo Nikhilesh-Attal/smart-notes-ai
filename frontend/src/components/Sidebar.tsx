@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { createSupabaseClient } from "../api/api";
 import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
