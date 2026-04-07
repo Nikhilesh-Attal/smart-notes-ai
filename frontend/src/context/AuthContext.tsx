@@ -6,7 +6,7 @@ import {
   useEffect,
 } from "react";
 import { createSupabaseClient } from "../api/api";
-import type { Session } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 
 const supabase = createSupabaseClient();
 
@@ -27,6 +27,8 @@ type AuthResponse = {
 
 type AuthContextType = {
   session: Session | null;
+  user: User | null;
+  loading: boolean;
   signUpNewUser: (params: Credentials) => Promise<AuthResponse>;
   signInUser: (params: Credentials) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
@@ -45,6 +47,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);  //add a loading state to show when the app is loading
 
+  const user = session?.user??null;
   /** -------- SIGNUP -------- */
   const signUpNewUser = async ({ email, password, fullName }: Credentials): Promise<AuthResponse> => {
     try {
@@ -144,12 +147,19 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
     <AuthContext.Provider
       value={{
         session,
+        user,
+        loading: isInitializing,
         signUpNewUser,
         signInUser,
         signOut,
       }}
     >
-      {children}
+      {!isInitializing ? children : (
+        <div className="flex h-screen items-center justify-center bg-brand-dark text-brand-muted text-lg">
+          Loading session...
+        </div>
+      )}
+      
     </AuthContext.Provider>
   );
 };
