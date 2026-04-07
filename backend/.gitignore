@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+
+# Binaries & Large Files
+*.exe
+*.dll
+*.so
+*.dylib
+backend/models/*.gguf
+
+# Environment Secrets
+.env
+.env.local

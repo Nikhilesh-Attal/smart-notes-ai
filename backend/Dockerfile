@@ -1,32 +1,33 @@
-# 1. Use a Python base (better for Llama/Whisper dependencies)
+# Use Python base (easier for AI tools)
 FROM python:3.10-slim
 
-# 2. Install Node.js
-RUN apt-get update && apt-get install -y curl
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
-
-# 3. Install FFmpeg (Required for your YouTube/Whisper logic)
-RUN apt-get install -y ffmpeg build-essential
+# Install Node.js & Build Tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
 WORKDIR /app
 
-# 4. Install Python dependencies
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir llama-cpp-python fastapi uvicorn pydantic
 
-# 5. Install Node dependencies
+# Install Node dependencies
 COPY package*.json ./
 RUN npm install
 
-# 6. Copy the rest of the backend code
+# Copy everything else
 COPY . .
 
-# 7. Create a folder for the model and download it (or copy it)
-RUN mkdir -p models
-# Tip: You can use 'wget' here to download the GGUF model during build
-# OR upload it to your HF Space directly.
+# Download Llama 3.2 3B Model during build
+RUN mkdir -p models && \
+    curl -L -o models/Llama-3.2-3B-Instruct-Q4_K_M.gguf https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF/resolve/main/Llama-3.2-3B-Instruct-Q4_K_M.gguf
 
-EXPOSE 5000
+# Hugging Face runs on 7860
+EXPOSE 7860
 
-# 8. Start the Node.js server
-CMD ["node", "server.js"]
+# Give execution permission and run the start script
+RUN chmod +x start.sh
+CMD ["./start.sh"]
