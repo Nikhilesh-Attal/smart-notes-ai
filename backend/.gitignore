@@ -1,15 +1,10 @@
-# Dependencies
+# Ignore everything that Hugging Face shouldn't see
 node_modules/
-.venv/
-venv/
-
-# Binaries & Large Files
+backend/node_modules/
+frontend/node_modules/
 *.exe
 *.dll
 *.so
 *.dylib
-backend/models/*.gguf
-
-# Environment Secrets
 .env
-.env.local
+backend/models/
