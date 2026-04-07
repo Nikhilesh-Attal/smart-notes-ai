@@ -23,6 +23,8 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const [input, setInput] = useState("");
 
+  const API_BASE_URL=import.meta.env.VITE_API_URL;
+      
   // Storage Persistence
   useEffect(() => {
     if (conversationId) {
@@ -62,7 +64,7 @@ export default function Chat() {
         user_id: userId
       });
 
-      const res = await fetch("http://localhost:5000/store-document", {
+      const res = await fetch(`${API_BASE_URL}/store-document`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +111,7 @@ export default function Chat() {
       formData.append("file", file);
       formData.append("documentId", docId);
 
-      const res = await fetch("http://localhost:5000/upload-document", {
+      const res = await fetch(`${API_BASE_URL}/upload-document`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${session?.access_token}` },
         body: formData,
@@ -141,7 +143,7 @@ export default function Chat() {
         await supabase.from("conversations").update({ title }).eq("id", conversationId);
       }
 
-      const res = await fetch("http://localhost:5000/query-document", {
+      const res = await fetch(`${API_BASE_URL}/query-document`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

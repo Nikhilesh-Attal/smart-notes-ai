@@ -85,7 +85,8 @@ export default function Sidebar({
 
       if (!token) throw new Error("Unauthorized person try to delete chat");
 
-      const reponse = await fetch(`http://localhost:5000/delete/conversation/${convId}`, {
+      const API_BASE_URL=import.meta.env.VITE_API_URL;
+      const reponse = await fetch(`${API_BASE_URL}/delete/conversation/${convId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
