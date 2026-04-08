@@ -1,6 +1,7 @@
 import { spawn } from "child_process"
 import path from "path"
 import fs from "fs"
+import { v4 as uuidv4 } from "uuid"
 
 export const getYoutubeTranscript = async (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -31,17 +32,17 @@ export const getYoutubeTranscript = async (url: string): Promise<string> => {
 
     console.log(`[1/2] Spawning yt-dlp...`)
 
+    const videoId = url.split('v=')[1]?.split('&')[0] || uuidv4(); // Get unique ID
+    const outputFilename = `${videoId}.mp3`;
+    const audioPath = path.join(tempDir, outputFilename);
+
     const args = [
       "--no-playlist",
       "-x",
-      "--audio-format",
-      "mp3",
-      "--no-write-subs",
-      "--no-write-auto-subs",
-      "-o",
-      path.join(tempDir, "%(id)s.%(ext)s"),
+      "--audio-format", "mp3",
+      "-o", audioPath, // Force specific filename
       url,
-    ]
+    ];
 
     const downloader = spawn(ytDlpPath, args)
 
@@ -76,11 +77,14 @@ export const getYoutubeTranscript = async (url: string): Promise<string> => {
         return reject(new Error("No audio file found after yt-dlp"))
       }
 
-      const audioPath = path.join(tempDir, files[0].name)
+      if (!fs.existsSync(audioPath)) {
+        return reject(new Error(`Audio file not found at ${audioPath}`));
+      }
 
       console.log(`[2/2] Audio saved: ${files[0].name}. Spawning Python transcriber...`)
 
-      const transcriber = spawn("python", [pythonScriptPath, audioPath])
+      // Look at what variable you used to have here instead of audioFilePath
+      const transcriber = spawn('venv/Scripts/python.exe', ['transcribe.py', audioPath]);
 
       let transcript = ""
       let errorLog = ""

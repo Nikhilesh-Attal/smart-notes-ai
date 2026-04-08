@@ -1,45 +1,55 @@
 import { createSupabaseClient } from "../api/api";
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faEllipsisVertical, 
+  faMessage, 
+  faPen, 
+  faTrash 
+} from "@fortawesome/free-solid-svg-icons";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Sidebar({
   setConversationId,
   setDocumentIds,
   setMessages,
   onNewChat,
+  conversations = [],
+  fetchHistory,
+  currentConversationId, // Pass this from Chat.tsx to highlight the active chat
 }: any) {
   const supabase = createSupabaseClient();
-
-  const [conversations, setConversations] = useState<any[]>([]);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  
+  // Local state for optimistic UI updates (instant frontend changes)
+  const [localConversations, setLocalConversations] = useState<any[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  // Sync prop conversations to local state
   useEffect(() => {
-    fetchHistory();
+    setLocalConversations(conversations);
+  }, [conversations]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    if (fetchHistory) fetchHistory();
   }, []);
 
-  const fetchHistory = async () => {
-    const { data, error } = await supabase
-      .from("conversations")
-      .select(
-        `id, title, conversation_documents(document_id)`
-      )
-      .order("created_at", { ascending: false });
+  // Close 3-dot menu if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActiveMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setConversations(data || []);
-  };
+  // --- Logic Functions ---
 
   const handleSelect = async (conv: any) => {
-    const docIds =
-      conv.conversation_documents?.map(
-        (d: any) => d.document_id
-      ) || [];
-
+    const docIds = conv.conversation_documents?.map((d: any) => d.document_id) || [];
     setConversationId(conv.id);
     setDocumentIds(docIds);
 
@@ -52,112 +62,173 @@ export default function Sidebar({
     setMessages(data || []);
   };
 
-  const handleRename = async (convId: string) => {
-    const newTitle = prompt("Enter new chat name:");
-    if (!newTitle) return;
+  const handleCreateChat = async () => {
+    // 1. Clear current screen
+    if (onNewChat) onNewChat();
 
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const newConvId = uuidv4();
+      const defaultTitle = "New Chat";
+
+      // 2. Optimistic UI update
+      const newChatObj = { id: newConvId, title: defaultTitle, created_at: new Date().toISOString() };
+      setLocalConversations((prev) => [newChatObj, ...prev]);
+
+      // 3. Auto-save to Supabase directly from frontend
+      const { error } = await supabase
+        .from("conversations")
+        .insert({ id: newConvId, user_id: userId, title: defaultTitle });
+
+      if (error) throw error;
+
+      // 4. Set as active
+      setConversationId(newConvId);
+      setDocumentIds([]);
+      setMessages([]);
+      
+      if (fetchHistory) fetchHistory(); // Sync backend state silently
+    } catch (error) {
+      console.error("Failed to auto-create chat:", error);
+    }
+  };
+
+  const handleRename = async (e: React.MouseEvent, convId: string, currentTitle: string) => {
+    e.stopPropagation();
+    setActiveMenu(null);
+    
+    const newTitle = prompt("Enter new chat name:", currentTitle);
+    if (!newTitle || newTitle.trim() === currentTitle) return;
+
+    // Optimistic UI Update (Instant frontend change)
+    setLocalConversations((prev) =>
+      prev.map((c) => (c.id === convId ? { ...c, title: newTitle } : c))
+    );
+
+    // Direct frontend-to-database update (No backend API needed)
     const { error } = await supabase
       .from("conversations")
       .update({ title: newTitle })
       .eq("id", convId);
 
-    if (error) console.error(error);
+    if (error) {
+      console.error("Rename error:", error);
+      if (fetchHistory) fetchHistory(); // Revert on failure
+    }
+  };
 
-    fetchHistory();
+  const handleDelete = async (e: React.MouseEvent, convId: string) => {
+    e.stopPropagation();
     setActiveMenu(null);
-  };
 
-  const handleDelete = async (convId: string) => {
     const confirmDelete = confirm("Delete this chat and its documents?");
-    if (!confirmDelete) {
-      setActiveMenu(null);
-      return;
+    if (!confirmDelete) return;
+
+    // Optimistic UI Update (Instant frontend change)
+    setLocalConversations((prev) => prev.filter((c) => c.id !== convId));
+    
+    // Clear chat window if active chat is deleted
+    if (currentConversationId === convId && onNewChat) {
+      onNewChat();
     }
 
-    setConversations((prev) =>
-      prev.filter((c) => c.id !== convId)
-    );
+    // Direct frontend-to-database deletion (No backend API needed)
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", convId);
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-
-      if (!token) throw new Error("Unauthorized person try to delete chat");
-
-      const API_BASE_URL=import.meta.env.VITE_API_URL;
-      const reponse = await fetch(`${API_BASE_URL}/delete/conversation/${convId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (!reponse.ok) {
-        throw new Error("Failed to delete chat");
-      }
-    } catch (error) {
-      console.error(error);
-      fetchHistory();
+    if (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete chat. Please try again.");
+      if (fetchHistory) fetchHistory(); // Revert on failure
     }
   };
 
-  const toggleMenu = (id: string) => {
+  const toggleMenu = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     setActiveMenu((prev) => (prev === id ? null : id));
   };
 
   return (
-    <aside className="w-64 bg-brand-darker flex flex-col border-r border-brand-border p-6">
-      <h2 className="text-xs uppercase tracking-widest text-brand-subtle mb-5 font-semibold">Dashboard</h2>
-
+    <aside className="w-64 bg-brand-darker flex flex-col border-r border-brand-border p-4 h-screen">
+      
+      {/* Auto-Create Chat Button */}
       <button
-        className="w-full py-3 bg-brand-green hover:bg-brand-green-hover text-brand-dark font-bold rounded-xl transition-all duration-200 hover:-translate-y-0.5 shadow-lg shadow-brand-green/20 mb-6 cursor-pointer"
-        onClick={onNewChat}
+        className="w-full py-3 px-4 bg-brand-green hover:bg-brand-green-hover text-brand-dark font-bold rounded-xl transition-all duration-200 active:scale-95 shadow-lg shadow-brand-green/20 mb-6 flex items-center justify-center gap-2 cursor-pointer"
+        onClick={handleCreateChat}
       >
-        + New Note
+        <FontAwesomeIcon icon={faPen} className="w-4 h-4" />
+        New Note
       </button>
 
-      <div className="flex-1 overflow-y-auto space-y-1">
-        {conversations.map((conv) => (
-          <div
-            key={conv.id}
-            className="group flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-brand-glass-hover transition-all duration-200 relative"
-          >
+      <h2 className="text-xs uppercase tracking-widest text-brand-subtle mb-3 px-2 font-semibold">
+        Recent
+      </h2>
+
+      {/* Chat History List */}
+      <div className="flex-1 overflow-y-auto space-y-1 pr-1 custom-scrollbar" ref={menuRef}>
+        {localConversations?.map((conv: any) => {
+          const isActive = currentConversationId === conv.id;
+
+          return (
             <div
+              key={conv.id}
               onClick={() => handleSelect(conv)}
-              className="flex-1 text-sm text-brand-muted hover:text-brand-green-light cursor-pointer truncate mr-2 transition-colors duration-200"
+              className={`group flex items-center justify-between rounded-lg px-3 py-2.5 cursor-pointer transition-all duration-200 relative ${
+                isActive ? "bg-white/10 text-white" : "hover:bg-brand-glass-hover text-brand-muted"
+              }`}
             >
-              {conv.title || "New Chat"}
-            </div>
+              {/* Icon & Title Section */}
+              <div className="flex-1 min-w-0 flex items-center gap-3">
+                <FontAwesomeIcon 
+                  icon={faMessage} 
+                  className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? "text-brand-green" : "text-brand-subtle group-hover:text-brand-muted"}`} 
+                />
+                <p className={`truncate text-sm ${isActive ? "font-medium" : "group-hover:text-brand-green-light transition-colors"}`}>
+                  {conv.title || "New Chat"}
+                </p>
+              </div>
 
-            {/* Three dot menu */}
-            <div className="relative">
-              <span
-                onClick={() => toggleMenu(conv.id)}
-                className="text-brand-subtle hover:text-white cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1"
-              >
-                <FontAwesomeIcon icon={faEllipsisVertical} />
-              </span>
+              {/* Three Dot Menu Container */}
+              <div className="relative flex-shrink-0 ml-2">
+                <button
+                  onClick={(e) => toggleMenu(e, conv.id)}
+                  className={`p-1 rounded-md transition-all duration-200 ${
+                    activeMenu === conv.id || isActive
+                      ? "opacity-100 text-white hover:bg-white/10"
+                      : "opacity-0 group-hover:opacity-100 text-brand-subtle hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <FontAwesomeIcon icon={faEllipsisVertical} className="w-3.5 h-3.5 px-1" />
+                </button>
 
-              {activeMenu === conv.id && (
-                <div className="absolute right-0 top-7 bg-brand-card border border-brand-border-light rounded-lg shadow-xl z-20 overflow-hidden min-w-[120px]">
-                  <div
-                    onClick={() => handleRename(conv.id)}
-                    className="px-4 py-2.5 text-sm text-brand-muted hover:text-white hover:bg-brand-glass-hover cursor-pointer transition-all duration-200"
-                  >
-                    Rename
+                {/* Dropdown Menu */}
+                {activeMenu === conv.id && (
+                  <div className="absolute right-0 top-full mt-1 bg-[#1a1a1e] border border-brand-border-light rounded-lg shadow-2xl z-50 overflow-hidden w-32 py-1">
+                    <button
+                      onClick={(e) => handleRename(e, conv.id, conv.title)}
+                      className="w-full text-left px-3 py-2 text-sm text-brand-muted hover:text-white hover:bg-white/10 flex items-center gap-2"
+                    >
+                      <FontAwesomeIcon icon={faPen} className="w-3 h-3" />
+                      Rename
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(e, conv.id)}
+                      className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 flex items-center gap-2"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
+                      Delete
+                    </button>
                   </div>
-                  <div
-                    onClick={() => handleDelete(conv.id)}
-                    className="px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-brand-glass-hover cursor-pointer transition-all duration-200"
-                  >
-                    Delete
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </aside>
   );

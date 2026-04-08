@@ -1,11 +1,10 @@
 import sys
-import whisper
-import warnings
 import os
+import warnings
+from faster_whisper import WhisperModel
 
-# 1. Cleanup output so Node only gets the text
+# Prevent logs from messing up Node.js output
 warnings.filterwarnings("ignore")
-sys.stdout.reconfigure(encoding='utf-8')
 
 def transcribe_audio(file_path):
     if not os.path.exists(file_path):
@@ -13,25 +12,25 @@ def transcribe_audio(file_path):
         sys.exit(1)
 
     try:
-        # 2. Load Model (First run will take time to download ~150MB)
-        # using "tiny" for speed while testing. Change to "base" or "small" later for quality.
-        model = whisper.load_model("tiny") 
+        # Load Faster-Whisper (More efficient than original)
+        model_size = "tiny" # Change to "base" for better accuracy
+        model = WhisperModel(model_size, device="cpu", compute_type="int8")
+
+        segments, info = model.transcribe(file_path, beam_size=5)
+
+        # Combine segments into one text block
+        full_text = " ".join([segment.text for segment in segments])
         
-        # 3. Run AI
-        result = model.transcribe(file_path)
-        
-        # 4. Output ONLY the text
-        print(result["text"])
+        # Output ONLY the final text so Node.js can read it
+        print(full_text.strip())
         
     except Exception as e:
         print(f"Error: {str(e)}")
         sys.exit(1)
 
 if __name__ == "__main__":
-    # Get the filename sent from Node.js
     if len(sys.argv) < 2:
         print("Error: No filename provided")
         sys.exit(1)
-        
-    audio_path = sys.argv[1]
-    transcribe_audio(audio_path)
+    
+    transcribe_audio(sys.argv[1])
